@@ -1,0 +1,24 @@
+Curso: https://www.youtube.com/watch?v=Ax4pT8XDR-0&list=PLZ2ovOgdI-kWqCet33O0WezN14KShkwER&ab_channel=CodersFree
+
+Se empleará Jetstream también, por lo que se requiere Node.js. 
+Cuando se instala Jetstream, también "viene incluido" Livewire (Esto por la parte de la instalación donde se elige que emplear para el Frontend... si es Livewire se trabajará con PHP y si es Inertia.js será con JS.), en este caso se trabajará con Livewire. Y se irá personalizando lo que genera Jetstream, así como agregando cosas.
+
+Comandos empleados:
+*Primero se creo repo en GitHub, se abrió VS Code, se abre terminal, nos cambiamos a escritorio (" cd .\Desktop\ "), ahora si: 
+" git clone https://github.com/erickavendanoh/laravel-livewire.git "
+*Abrimos la carpeta donde está creada la clonación*
+" node -v " (para ver que Node si esté instalado)
+" composer -v " (para ver que Composer si esté instalado)
+" composer create-project laravel/laravel laravel-livewire "
+" cd .\laravel-livewire\ "
+" php artisan serve "  (para ver que jale)
+" composer require laravel/jetstream "
+" php artisan jetstream:install livewire "
+*si pregunta si se quieren volver a correr las migraciones porque se agregaron nuevas: poner "y"
+" npm install "
+" npm run build "
+" php artisan migrate "
+" php artisan serve "  (para ver que jale)
+
+Ya una vez creado proyecto de Laravel, junto con Jetsream, en ruta "/dashboard" se puede apreciar la vista "dashboard.blade.php" (resources/views) que se crea al principio recién creado el proyecto, donde al analizarlo se puede ver que emplea como plantilla "app.blade.php" (dentro de resources/views/layouts), el cual ya incluye las directivas de Livewire "@livewireStyles" y "@livewireScripts" que corresponden a los estilos y scripts que emplea Livewire respectivamente, por lo que las vistas que empleen "app.blade.php" como plantilla ya incluiran lo requerido para emplear Livewire, y asimismo se puede notar que "app.blade.php" actúa más como componente de blade que como plantilla (por uso de $slot y slots con nombre, a los cuales se les da valor cuando se emplea en otras vistas, en lugar de los "@yield()" y así). Dentro de esa vista "dashboard.blade.php" también se emplean componentes, como el correspondiente a "welcome.blade.php" (resources/views/components) (empleado usando "<x-welcome />")
+
