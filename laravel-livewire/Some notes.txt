@@ -1,5 +1,26 @@
 Curso: https://www.youtube.com/watch?v=Ax4pT8XDR-0&list=PLZ2ovOgdI-kWqCet33O0WezN14KShkwER&ab_channel=CodersFree
 
+
+
+*Para comandos y demás fijarse que se esté dentro de carpeta con el proyecto: comando " cd .\laravel-livewire\ " para ir dentro
+
+
+
+***Se tiene proyecto en Repo, por lo que consideraciones al momento de clonar:
+-Si no está el archivo .env, generarlo, a partir de archivo "env.txt"
+-Comando "composer install"
+-Comando "npm install"
+-Si marca errror: " Database file at path [C:\laragon\www\laravel-livewire\laravel-livewire\database\database.sqlite] does not exist. Ensure this is an absolute path to the database. (Connection: sqlite, SQL: select * from "sessions" where "id" = g1OjctZ0WYLkV9JqmeVnhVGLgadKYbccaB1mjk2M limit 1) ":
+    *en archivo ".env" cambiar de "sqlite" a "mysql"
+-Si marca error: " SQLSTATE[HY000] [1049] Unknown database 'laravel' (Connection: mysql, SQL: select * from `sessions` where `id` = VInTp5ld5Y5875EOnudYtDZfpC68BXtLOYOvrC7M limit 1) ":
+    *comando " php artisan migrate " (si indica " The database 'laravel' does not exist on the 'mysql' connection. Would you like to create it? (yes/no) " poner "y", aunque sea para que jale por mientras, ya después si es el caso se cambiaría la referencia a otra BD)
+-Si marca error: " Vite manifest not found at: C:\laragon\www\laravel-livewire\laravel-livewire\public\build/manifest.json "
+    *Abrir una terminal y ejecutar comando "npm run dev" (esto es para que detecte Tailwind, ya que "@vite" es una directiva de Tailwind que se está empleando)
+    *Abrir otra terminal y ejecutar "php artisan serve"
+
+
+
+First notes:
 Se empleará Jetstream también, por lo que se requiere Node.js. 
 Cuando se instala Jetstream, también "viene incluido" Livewire (Esto por la parte de la instalación donde se elige que emplear para el Frontend... si es Livewire se trabajará con PHP y si es Inertia.js será con JS.), en este caso se trabajará con Livewire. Y se irá personalizando lo que genera Jetstream, así como agregando cosas.
 
@@ -20,5 +41,7 @@ Comandos empleados:
 " php artisan migrate "
 " php artisan serve "  (para ver que jale)
 
-Ya una vez creado proyecto de Laravel, junto con Jetsream, en ruta "/dashboard" se puede apreciar la vista "dashboard.blade.php" (resources/views) que se crea al principio recién creado el proyecto, donde al analizarlo se puede ver que emplea como plantilla "app.blade.php" (dentro de resources/views/layouts), el cual ya incluye las directivas de Livewire "@livewireStyles" y "@livewireScripts" que corresponden a los estilos y scripts que emplea Livewire respectivamente, por lo que las vistas que empleen "app.blade.php" como plantilla ya incluiran lo requerido para emplear Livewire, y asimismo se puede notar que "app.blade.php" actúa más como componente de blade que como plantilla (por uso de $slot y slots con nombre, a los cuales se les da valor cuando se emplea en otras vistas, en lugar de los "@yield()" y así). Dentro de esa vista "dashboard.blade.php" también se emplean componentes, como el correspondiente a "welcome.blade.php" (resources/views/components) (empleado usando "<x-welcome />")
+Ya una vez creado proyecto de Laravel, junto con Jetsream, en ruta "/dashboard" se puede apreciar la vista "dashboard.blade.php" (nos referimos ahora a "dashboard.blade copy.php", que fue una copia del archivo "dashboard.blade.php" que se crea por defecto al principio cuando se crea el proyecto (es de la parte de Jetsream), ubicado en resources/views, pero como el original se fue modificando por eso se deja la copia como referencia), donde al analizarlo se puede ver que emplea como plantilla "app.blade.php" (igual que con "dashboard", al original de este que se crea cuando recién se crea el proyecto también se le creo una copia, "app.blade copy.php"), ubicado dentro de resources/views/layouts, el cual ya incluye las directivas de Livewire "@livewireStyles" y "@livewireScripts" que corresponden a los estilos y scripts que emplea Livewire respectivamente, por lo que las vistas que empleen "app.blade.php" como plantilla ya incluiran lo requerido para emplear Livewire, y asimismo se puede notar que "app.blade.php" actúa más como componente de blade que como plantilla (por uso de $slot y slots con nombre, a los cuales se les da valor cuando se emplea en otras vistas, en lugar de los "@yield()" y así). Dentro de esa vista "dashboard.blade.php" también se emplean componentes, como el correspondiente a "welcome.blade.php", ubicada en resources/views/components (de igual forma, se le creo su copia del archivo original que se crea recién creado el proyecto, "welcome.blade copy.php") (empleado usando "<x-welcome />" en "dashboard")
 
+IMPORTANTE: POR MOTIVOS DE AGILIZAR LA TOMA DEL CURSO, NO SE ESTARÍAN TOMANDO NOTAS TAN RIGUROSAS COMO HA SIDO EN OTROS CASOS. LOS ARCHIVOS QUE SE GENERAN CUANDO RECIÉN SE CREA EL PROYECTO (PROPIOS DE LARAVEL, TAILWIND, JETSTREAM, ETC.) SE IRÁN MODIFICANDO, ES POR ELLO QUE SE HICIERON LAS COPIAS DE ALGUNOS DE LOS PRIMEROS ARCHIVOS QUE SE GENERAN AL PRINCIPIO CUANDO RECIÉN SE CREA UN PROYECTO CON ESAS TECNOLOGÍAS. PERO EN ADELANTE SERÁ SOLO IR TOMANDO EL CURSO "COMO VA" PRÁCTICAMENTE.
+    *SI SE QUIEREN REPASAR CONCEPTOS DE COMPONENTES BLADE (DE CLASE Y ANÓNIMOS), ALGO DE JESTREAM Y/O IMPLEMENTACIÓN DE TAILWIND, VER REPO: https://github.com/erickavendanoh/laravel-jetsream-inicio-y-componentes-blade
