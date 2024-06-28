@@ -45,3 +45,33 @@ Ya una vez creado proyecto de Laravel, junto con Jetsream, en ruta "/dashboard" 
 
 IMPORTANTE: POR MOTIVOS DE AGILIZAR LA TOMA DEL CURSO, NO SE ESTARÍAN TOMANDO NOTAS TAN RIGUROSAS COMO HA SIDO EN OTROS CASOS. LOS ARCHIVOS QUE SE GENERAN CUANDO RECIÉN SE CREA EL PROYECTO (PROPIOS DE LARAVEL, TAILWIND, JETSTREAM, ETC.) SE IRÁN MODIFICANDO, ES POR ELLO QUE SE HICIERON LAS COPIAS DE ALGUNOS DE LOS PRIMEROS ARCHIVOS QUE SE GENERAN AL PRINCIPIO CUANDO RECIÉN SE CREA UN PROYECTO CON ESAS TECNOLOGÍAS. PERO EN ADELANTE SERÁ SOLO IR TOMANDO EL CURSO "COMO VA" PRÁCTICAMENTE.
     *SI SE QUIEREN REPASAR CONCEPTOS DE COMPONENTES BLADE (DE CLASE Y ANÓNIMOS), ALGO DE JESTREAM Y/O IMPLEMENTACIÓN DE TAILWIND, VER REPO: https://github.com/erickavendanoh/laravel-jetsream-inicio-y-componentes-blade
+
+
+
+Comandos and beyond:
+" php artisan make:livewire ShowPosts "
+
+
+Para que el contenido correspondiente a las vistas de los componentes se renderice correctamente, todo debe ir dentro de los <div> que se crean por defecto dentro de sus archivos .blade.php cuando estos se crean
+
+
+Las dos formas de emplear un componente de Livewire dentro de una vista son:
+@livewire('*nombre del componente*')  ("forma antigua")
+<livewire:*nombre del componente* />  ("forma más actual")
+
+
+*Importante: Cuandos se quieran reutilizar ciertas porciones de código (correspondientes a elementos que tienen la misma estructura y se emplean en varias partes de la página como pueden ser tablas, alerts, o secciones en general que se repitan en sitio web) que se repite y solo cambia algunos valores (que pueden ser pasados como parámetros) no se recomienda mucho usar los componentes de Livewire, sino en esos casos serían mejor los componentes de Blade. Los componentes de Livewire se emplearían para agregar reactividad (actualización o muestras de información sin necesidad de refrescar la página) en algunas partes o secciones de la página donde se requiera
+
+
+" php artisan make:livewire *nombre de subcarpeta*/*nombre del componente* " (Para crear los archivos correspondientes al componente que se está creando dentro de una subcarpeta dentro de las de "Livewire" tanto en "app" como en "resources/views", donde si no existe esa subcarpeta la crea también) ej. " php artisan make:livewire Nav/ShowPosts "
+Para llamarlos desde las vistas cuando es así, es igual, solo que anteponiendo el nombre de la carpeta y un "." donde va el nombre del componente
+
+
+El primer componente creado fue "ShowPosts" (por tema de comentarios de funcionalidad de algunas cosas)
+
+
+Los valores que se pasen como parámetros a un componente de Livewire desde las vistas corresponderán a los atributos en su clase (Back, archivo .php), y se pasarán: <livewire:show-posts title="Este es un titulo de prueba" />
+En caso de que no se quiera asignar el valor al atributo directamente desde la vista, se puede emplear la función mount(), la cual no se llama explicitamente sino que lo que se le ponga como parámetro serán las variables a las que se les de valor desde las llamadas en las vistas del componente (donde el nombre del parámetro y la asignación del valor del mismo desde la vista deben corresponder), y ya dentro de esa función se le asigna ese valor al atributo correspondiente, el cual es el que se usa en el "front" (archivo blade.php) del componente
+
+
+Si bien los componentes de Livewire se emplean en casos donde solo ciertas secciones o partes de una página requieren reactividad, también habrán casos de páginas completas que necesiten ser reactivas. Para esos casos se puede crear un componente que corresponderá a toda esa página y su Back (archivo .php) podrá fungir como controlador y su Front (archivo blade.php) podrá fungir como la vista de ese controlador (esto para aspectos del web.php, puediéndolos definir con rutas determinadas). Esto sería mejor que tener un controlador y una vista normales, donde dentro de esta se llamen un montón de componentes de Livewire (los cuales se tendrán que crear y definir previamente), y teniendo muchos más archivos.
