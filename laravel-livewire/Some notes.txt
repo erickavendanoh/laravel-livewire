@@ -2,7 +2,11 @@ Curso: https://www.youtube.com/watch?v=Ax4pT8XDR-0&list=PLZ2ovOgdI-kWqCet33O0Wez
 
 
 
+
+
 *Para comandos y demás fijarse que se esté dentro de carpeta con el proyecto: comando " cd .\laravel-livewire\ " para ir dentro
+
+
 
 
 
@@ -17,6 +21,9 @@ Curso: https://www.youtube.com/watch?v=Ax4pT8XDR-0&list=PLZ2ovOgdI-kWqCet33O0Wez
 -Si marca error: " Vite manifest not found at: C:\laragon\www\laravel-livewire\laravel-livewire\public\build/manifest.json "
     *Abrir una terminal y ejecutar comando "npm run dev" (esto es para que detecte Tailwind, ya que "@vite" es una directiva de Tailwind que se está empleando)
     *Abrir otra terminal y ejecutar "php artisan serve"
+-CREAR LA BD ("laravel_livewire" conCHARACTER SET utf8mb4 y COLLATE utf8mb4_spanish_c) CORRESPONDIENTE EMPLEADA Y/O REFERENCIADA EN ARCHIVO .env, ASÍ COMO COLOCAR LA CONTRASEÑA CORRESPONDIENTE A LA MÁQUINA LOCAL DONDE SE ESTÉ CORRIENDO EL PROYECTO, ASÍ COMO EJECUTAR LAS MIGRACIONES CORRESPONDIENTES SI ES EL CASO, CON "php artisan migrate", Y DE IGUAL FORMA LOS SEEDER Y DEMÁS COSAS QUE SE EMPLEARON EN PASOS POSTERIORES PARA POBLAR ALGUNAS TABLAS Y ASÍ.
+
+
 
 
 
@@ -48,11 +55,15 @@ IMPORTANTE: POR MOTIVOS DE AGILIZAR LA TOMA DEL CURSO, NO SE ESTARÍAN TOMANDO N
 
 
 
+
+
 Comandos and beyond:
 " php artisan make:livewire ShowPosts "
 
 
-Para que el contenido correspondiente a las vistas de los componentes se renderice correctamente, todo debe ir dentro de los <div> que se crean por defecto dentro de sus archivos .blade.php cuando estos se crean
+
+Para que el contenido correspondiente a las vistas de los componentes se renderice correctamente, todo debe ir dentro de los <div> que se crean por defecto dentro de sus archivos .blade.php ("front") cuando estos se crean
+
 
 
 Las dos formas de emplear un componente de Livewire dentro de una vista son:
@@ -60,18 +71,118 @@ Las dos formas de emplear un componente de Livewire dentro de una vista son:
 <livewire:*nombre del componente* />  ("forma más actual")
 
 
+
 *Importante: Cuandos se quieran reutilizar ciertas porciones de código (correspondientes a elementos que tienen la misma estructura y se emplean en varias partes de la página como pueden ser tablas, alerts, o secciones en general que se repitan en sitio web) que se repite y solo cambia algunos valores (que pueden ser pasados como parámetros) no se recomienda mucho usar los componentes de Livewire, sino en esos casos serían mejor los componentes de Blade. Los componentes de Livewire se emplearían para agregar reactividad (actualización o muestras de información sin necesidad de refrescar la página) en algunas partes o secciones de la página donde se requiera
+
 
 
 " php artisan make:livewire *nombre de subcarpeta*/*nombre del componente* " (Para crear los archivos correspondientes al componente que se está creando dentro de una subcarpeta dentro de las de "Livewire" tanto en "app" como en "resources/views", donde si no existe esa subcarpeta la crea también) ej. " php artisan make:livewire Nav/ShowPosts "
 Para llamarlos desde las vistas cuando es así, es igual, solo que anteponiendo el nombre de la carpeta y un "." donde va el nombre del componente
 
 
+
 El primer componente creado fue "ShowPosts" (por tema de comentarios de funcionalidad de algunas cosas)
 
 
-Los valores que se pasen como parámetros a un componente de Livewire desde las vistas corresponderán a los atributos en su clase (Back, archivo .php), y se pasarán: <livewire:show-posts title="Este es un titulo de prueba" />
-En caso de que no se quiera asignar el valor al atributo directamente desde la vista, se puede emplear la función mount(), la cual no se llama explicitamente sino que lo que se le ponga como parámetro serán las variables a las que se les de valor desde las llamadas en las vistas del componente (donde el nombre del parámetro y la asignación del valor del mismo desde la vista deben corresponder), y ya dentro de esa función se le asigna ese valor al atributo correspondiente, el cual es el que se usa en el "front" (archivo blade.php) del componente
+
+Los valores que se pasen como parámetros a un componente de Livewire desde las vistas corresponderán a los atributos en su clase (Back, archivo .php), y se pasarán como en este ejemplo: " <livewire:show-posts title="Este es un titulo de prueba" /> ", donde en el back del componente (archivo .php) iría esto:" public $title; " y en su front (archivo .blade.php) se emplearía así: " {{$title}} " (colocado en la parte correspondiente donde se quiera mostrar)
+En caso de que no se quiera asignar el valor al atributo directamente desde la vista, se puede emplear la función mount(), la cual no se llama explicitamente sino que lo que se le ponga como parámetro serán las variables a las que se les de valor desde las llamadas en las vistas del componente (donde el nombre del parámetro y la asignación del valor del mismo desde la vista deben corresponder), y ya dentro de esa función se le asigna ese valor al atributo correspondiente, el cual es el que se usa en el "front" (archivo blade.php) del componente, por ejemplo:
+en back quedaría algo así:
+"
+    public $titulo; 
+
+    public function mount($title){
+        $this->titulo = $title;
+    }
+"
+en front se emplearía igual, con los "{{}}", pero emplenado su atributo que es al que se le está dando valor: " {{$titulo}} ". Y en la vista donde se llama al componente sería: " <livewire:show-posts title="Este es un titulo de prueba" /> " (se le asigna valor a $title, que es el parámetro de mount() el cuál dentro le asigna ese valor al atributo $titulo del componente)
+
 
 
 Si bien los componentes de Livewire se emplean en casos donde solo ciertas secciones o partes de una página requieren reactividad, también habrán casos de páginas completas que necesiten ser reactivas. Para esos casos se puede crear un componente que corresponderá a toda esa página y su Back (archivo .php) podrá fungir como controlador y su Front (archivo blade.php) podrá fungir como la vista de ese controlador (esto para aspectos del web.php, puediéndolos definir con rutas determinadas). Esto sería mejor que tener un controlador y una vista normales, donde dentro de esta se llamen un montón de componentes de Livewire (los cuales se tendrán que crear y definir previamente), y teniendo muchos más archivos.
+Para hacer esto, en archivo web.php se debe importar el componente de Livewire (por ejemplo: " use App\Livewire\ShowPosts; "). Y en la ruta correspondiente, solo se coloca lo que iría en la url y el nombre del componente a manera de controlador (con el "::class" adelante), quedando por ejemplo: " Route::get('/dashboard', ShowPosts::class)->name('dashboard'); ", y ya la vista que se mostrará es la indicada en método "render()" del componente, que generalmente correspondería a su archivo front. 
+Por defecto cuando se hace esto, el layout o plantilla que se carga por defecto y en la que dentró se contendrá el contenido del componente es la de resources/views/layouts/app.blade.php (en teoría ya la reconoce por defecto, pero en mi caso tuve que indicar expicitamente que trabajará con ella con " ->layout('layouts.app'); " dentro del método render() en el back del componente después del " return view(...) ", ya que de lo contrario marcaba error, donde al parecer quería buscar la plantilla en carpeta "components").
+Asimismo, se le puede indicar que emplee otra plantilla diferente a la que emplearía por defecto, que sería app.blade.php, como puede ser otra llamada "base.blade.php" (creada previamente dentro de resources/views/layouts/) por ejemplo, quedando así el método render() dentro del back del componente:
+"
+public function render()
+    {
+        return view('livewire.show-posts')
+                ->layout('layouts.base');
+    }
+"
+
+Nota: para apreciar mejor el flujo de donde se va colocando la información del contenido de un componente cuando se define a manera de controlador, en un momento dentro del front del componente ShowPosts se coloco: 
+" 
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Dashboard') }}
+        </h2>
+    </x-slot>
+"
+esto ya que en su back se definió que emplará el layout "app.blade.php" con: " ->layout('layouts.app'); "
+y se notó que el contenido del componente (front) se coloca en parte de "$slot" dentro de app.blade.php, y ese código correspondiente al slot con nombre, "header", para ver que se colocaba nuevamente (aparte del que ya está por defecto) en parte de "$header", que corresponde a slot con nombre "header" (todo esto también va relacionado a tema componentes de blade, que es con lo que también trabaja Jetstream).
+
+
+
+Para obtener los valores que se mandan por url en una ruta, por ejemplo una definida en web.php que sea: " Route::get('prueba/{name}', ShowPosts::class); ", en back del componente quedaría:
+"
+    public $nombreParteComponente;
+
+    public function mount($name){ //El nombre del parámetro en mount() debe corresponder al definido en ruta 
+        $this->nombreParteComponente = $name;
+    }
+
+"
+y en el front ya se emplearía con: " {{$nombreParteComponente}} ", donde por ejemplo en la url: " http://127.0.0.1:8000/prueba/erick " se mostraría "erick" en esa parte donde se emplea el atributo.
+
+
+
+
+
+Para parte de ver como recuperar información de BD desde el back de un componente y esa pasarla y emplearla en su front:
+
+Antes:
+-Se creó BD "laravel_livewire" en MySQL, con CHARACTER SET utf8mb4 y COLLATE utf8mb4_spanish_c.
+-Se modificó el .env cambiando lo de "sqlite" a "mysql", así como el nombre de la BD y la contraseña correspondiente a ambiente local.
+-Comando "php artisan migrate"
+
+Luego:
+-" php artisan make:model Post -m -f " (que se cree tanto el modelo (app/Models) con su respectiva migración (database/migrations), así como de una vez su Factory (database/factories) correspondientes)
+*Recordar que los factories son donde se define la información que se le va a asignar a ciertos campos correspondientes a un modelo dentro de su respectiva tabla en la BD, generalmente se usan con "->faker" el cual genera valores aleatorios distintos para cada registro. Y el seeder es donde se indica cuantas veces ejecutar el factory de un modelo en especifico, es decir cuántos registros se generarán en la tabla correspondiente a dicho modelo en abse a lo definido en su factory.
+-Se le definieron otros campos que tendrá la tabla correspondiente al modelo en la BD en su archivo de migración (el "...create_..." dentro de database/migrations)
+-Luego se definieron los valores que se le asignaran a esos campos, empleando "faker", en su respectivo archivo de Factory. Ejemplo: 
+ "
+    public function definition(): array
+    {
+        return [
+        'title' => $this->faker->sentence(),
+        'content' => $this->faker->text()
+        ];
+    }
+ "
+ Donde "sentence()" define una sentencia en ese campo, mientras que "text()" genera un texto de relleno
+-Luego en el archivo "DatabaseSeeder.php" (dentro de database/seeders), en el método run() (que es el que se ejecuta con comando " php artisan db:seed ") se definio la cantidad de veces (cantidad de registros a generar) que se ejcutará el Factory del modelo. Ej. "  \App\Models\Post::factory(100)->create(); "
+-Luego en el archivo del modelo (dentro de app/Models) se habilita la asignación masiva. Con algo como: " protected $fillable = ['title', 'content']; " (los campos considerados son los que se poblaran con factory y seeder) 
+-" php artisan migrate:fresh --seed " (vuelve a generar las tablas pero a la vez ejecuta los seeders. Considerar que al emplear "migrate:fresh" se borran los registros que se tenían también)
+
+Ya para recuperar la información de la BD desde el back del componente y emplearla/mostrarla su front es igual que como se haría con un controlador y vista normales. Por ejemplo:
+en su back:
+"
+    use Livewire\Component;
+    use App\Models\Post;
+
+    class ShowPosts extends Component
+    {
+        public function render()
+        {
+            $posts = Post::all();
+
+            return view('livewire.show-posts', compact('posts'))
+                    ->layout('layouts.app');
+        }
+    }
+"
+y en su front ya solo se mostraría o usaría con: "{{$posts}}"
+
+
+
