@@ -644,3 +644,25 @@ Y donde en el front del componente, quedaría algo así (posteriormente se modif
     </div>
 
 
+
+
+
+Se puede enlazar un atributo (publico) del back directamente a un elemento del front en un componente de livewire (como en Angular con NgModel), de manera tal que cuando el valor de ese atributo cambie en el front también lo hará en el back y viceversa.
+Esto ocurre de manera asincrona, de manera que los cambios se visualizan sin necesidad de que se recargue la página. Pero lo que realmente ocurre es que cada vez que se modifiquen los atributos de un componente o se ejecute alguna de sus funciones, se vuelve a ejecutar su función render() mostrando los cambios ya hechos (esto es un arma de doble filo, ya que si hay muchas cosas que se cargan en el render() comenzaría a significar un problema de rendimiento que se tuvieran que cargar nuevamente cada vez que se modifica el valor de alguno de los atributos o cada que se ejcuta alguna de las funciones del componente)
+Ej.
+back:
+"
+class ShowPosts extends Component
+{
+    public $search = "Esto es lo que se buscará";
+    ...
+}
+"
+front:
+"
+...
+    <div class="px-6 py-4">
+        <input type="text" wire:model.live="search">
+    </div>
+...
+"

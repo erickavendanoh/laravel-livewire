@@ -8,6 +8,8 @@ use App\Models\Post;
 
 class ShowPosts extends Component
 {
+    public $search;
+    
     public function render()
     {
         $posts = Post::all();

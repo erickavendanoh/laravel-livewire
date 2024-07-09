@@ -7,6 +7,11 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <x-table>
+
+            <div class="px-6 py-4">
+                <input type="text" wire:model.live="search">
+            </div>
+
             <table class="min-w-full leading-normal">
                 <thead>
                     <tr>
@@ -22,6 +27,7 @@
                             class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             CONTENT
                         </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"></th>
                     </tr>
                 </thead>
                 <tbody>
