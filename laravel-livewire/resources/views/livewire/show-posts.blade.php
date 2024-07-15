@@ -9,8 +9,11 @@
         <x-table>
 
             <div class="px-6 py-4">
-                <input type="text" wire:model.live="search">
+                {{-- <input type="text" wire:model.live="search"> --}}
+                <x-input type="text" class="w-full" placeholder="Escriba que quiere buscar" wire:model.live="search" />  <!--Componente de blade de los ya incluidos con Jetstream-->
             </div>
+
+            @if($posts->count()) {{--Se valida si existen "posts" por mostrar. Ósea que desde un inicio venga la variable con $posts con información, o que si se hayan encontrado coincidencias al momento de ir buscando--}}
 
             <table class="min-w-full leading-normal">
                 <thead>
@@ -53,6 +56,13 @@
                     @endforeach
                 </tbody>
             </table>
+
+            @else
+                <div class="px-6 py-4">
+                    No existe ningún registro coincidente
+                </div>
+            @endif
+
         </x-table>
     </div>
     

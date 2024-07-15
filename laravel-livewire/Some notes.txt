@@ -648,7 +648,7 @@ Y donde en el front del componente, quedaría algo así (posteriormente se modif
 
 
 Se puede enlazar un atributo (publico) del back directamente a un elemento del front en un componente de livewire (como en Angular con NgModel), de manera tal que cuando el valor de ese atributo cambie en el front también lo hará en el back y viceversa.
-Esto ocurre de manera asincrona, de manera que los cambios se visualizan sin necesidad de que se recargue la página. Pero lo que realmente ocurre es que cada vez que se modifiquen los atributos de un componente o se ejecute alguna de sus funciones, se vuelve a ejecutar su función render() mostrando los cambios ya hechos (esto es un arma de doble filo, ya que si hay muchas cosas que se cargan en el render() comenzaría a significar un problema de rendimiento que se tuvieran que cargar nuevamente cada vez que se modifica el valor de alguno de los atributos o cada que se ejcuta alguna de las funciones del componente)
+Esto ocurre de manera asincrona, de manera que los cambios se visualizan sin necesidad de que se recargue la página. Pero lo que realmente ocurre es que cada vez que se modifiquen los atributos de un componente o se ejecute alguna de sus funciones, se vuelve a ejecutar su función render() mostrando los cambios ya hechos (esto es un arma de doble filo, ya que si hay muchas cosas que se cargan en el render() comenzaría a significar un problema de rendimiento que se tuvieran que cargar nuevamente cada vez que se modifica el valor de alguno de los atributos o cada que se ejcuta alguna de las funciones del componente. Y se tendrían que hacer algunas cosas para evitar que se renderice cada que esto ocurre)
 Ej.
 back:
 "
@@ -666,3 +666,26 @@ front:
     </div>
 ...
 "
+
+Aprovechando ese comportamiento, se implementó una búsqueda dinámica, donde dentro del render() en el back del componente, ahora en lugar de traer todos los registros de Post siempre (" Post::all() ")  ahora sería en base al valor que vaya tomando $search  en relación a lo que se vaya ingresando dentro del <input> que está directamente relacionado con ese atributo (la primera vez y mientras no se tenga valor en $search traería todos, como lo hacía antes de implementar eso), quedando:
+"
+public function render()
+    {
+        $posts = Post::where('title', 'like', '%' . $this->search . '%')
+                    ->orWhere('content', 'like', '%' . $this->search . '%')
+                    ->get();
+
+        return view('livewire.show-posts', compact('posts'))
+                ->layout('layouts.app');
+    }
+"
+*En cuanto a la parte de la consulta SQL y demás, recordar que el operador "like" se usa para arrojar los resultados donde coincidan con dicho valor o que contengan en cierto atributo los caracteres ingresados, y poniendo los "%" en ambos lados es para indicar que puede haber texto tanto antes como atras en el valor que contiene dicho atributo.
+*En cuanto a Eloquent, el get() es para obtener la colección resultante con los resultados de la consulta SQL
+Ya con esto cada que se vaya ingresando algo en el <input> y por ende modificando el atributo "$search" se irán filtrando los valores que contendrá la colección $posts, y como se está modificando un atributo del componente se volverá a ejecutar el render() donde se pasará $posts ahora con los valores correspondientes al resultado de la consulta y se vuelve a renderizar la vista, cargando nuevamente la tabla con los resulrtados. *Se agregaron validaciones en la vista para en casos donde no haya coincidencias
+
+
+
+
+
+Cuando se instala JetStream por defecto ya se incluyen unos componentes de blade ya hechos, ubicados en resources/views/components, que se pueden usar en los archivos .blade.php como un componente de blade normal, funcionando igual con lo de $slot, $attributes, slots con nombre, parámetros, etc.
+
