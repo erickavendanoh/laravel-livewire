@@ -15,6 +15,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <!-- Styles -->
+        <link rel="stylesheet" href="{{ asset('vendor/font-awesome-4.7.0/css/font-awesome.css') }}"> <!--Para iconos de Font Awesome-->
         @livewireStyles
     </head>
     <body class="font-sans antialiased">

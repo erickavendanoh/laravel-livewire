@@ -689,3 +689,65 @@ Ya con esto cada que se vaya ingresando algo en el <input> y por ende modificand
 
 Cuando se instala JetStream por defecto ya se incluyen unos componentes de blade ya hechos, ubicados en resources/views/components, que se pueden usar en los archivos .blade.php como un componente de blade normal, funcionando igual con lo de $slot, $attributes, slots con nombre, parámetros, etc.
 
+
+
+
+
+Se implementó un sort ("acómodo") dinámico, con el que se ordenaran los registros de la tabla ya sea de forma ascendente o descendente según el campo correspondiente al encabezado sobre el cual se de clic.
+*Para los iconos se empleó "Font Awesome", que es un conjunto de herramientas de fuentes e íconos basado en CSS y Less. Para poder emplearlo se descarga desde liga: https://fontawesome.com/v4/get-started/ en base a sección "Download & Customize" dando clic en opción "Download"->descomprimir el zip->la carpeta resultante (checar que dentro no haya otra contenida, si es así sería la que está contenida) copiarla y pegarla dentro de carpeta "vendor" (previamente creada dentro de carpeta "public" del proyecto)->luego, en archivo "app.blade.php" (que es la plantilla que emplean las vistas y algunos componentes creados de Livewire) hacer referencia al archivo .css con el que se emplean: " <link rel="stylesheet" href="{{ asset('vendor/font-awesome-4.7.0/css/font-awesome.css') }}"> <!--Para iconos de Font Awesome--> " (con función "asset()" se indica que se apunta a carpeta "public" del proyecto, y ya lo que va dentro es lo que sigue de la ruta, como las carpetas y archivos que van dentro y a los que se hará referencia en específico)
+
+En el back de componente ShowPosts, archivo "ShowPosts.php" se agregó:
+"
+public $sort = 'id';
+public $direction = 'desc';
+"
+que serían los atributos mediante los cuales se manejarían los aspectos de a qué campo se hará referencia y mediante el cual se ordenaran los registros en un momento dado ($sort) así como si será de forma ascendete o descendente ($direction). Al inicializarlos con 'id' y 'desc' respectivamente, los registros se mostrarán así en primera instancia, de mayor a menor id, cuando se cargue por primera vez la página y hasta que se haga un cambio.
+En su función render() se modificó la consulta que obtiene los registros que se mostraran, que será lo que se contendrá en atributo $posts en un momento dado, agregando " ->orderBy($this->sort, $this->direction) " para la parte del acomodo, quedando:
+"
+$posts = Post::where('title', 'like', '%' . $this->search . '%')
+                    ->orWhere('content', 'like', '%' . $this->search . '%')
+                    ->orderBy($this->sort, $this->direction)
+                    ->get();
+"
+en la función orderBy de Eloquent, primero se recibe como parámetro el campo de la tabla mediante el cual se hará el acomodo y después si este será ascendente ('asc') o descendente ('desc')
+Y se agregó una función "order()" que tendrá la lógica en base a la cual se hará el acomodo:
+"
+public function order($sort){
+
+        if($this->sort == $sort){
+            if($this->direction == 'desc'){
+                $this->direction = 'asc';
+            }else{
+                $this->direction = 'desc';
+            }
+        }else{
+            $this->sort = $sort;
+            $this->direction = 'asc';
+        }
+    }
+"
+donde básicamente se irán cambiando los valores a los atributos $sort y $direction, que son en base a los cualés se estará haciendo el acomodo desde la consulta con Eloquent. Este método se irá llamando cada que se haga clic sobre cada uno de los encabezados de la tabla en la vista, y donde cada uno tendrá el valor correspondiente a $sort al que hagan referencia. Y como se está cambiando algo del componente desde el back recordar que por esto se vuelve a ejecutar función "render()" por lo que la tabla se mostrara ahora con el acomodo correspondiente sinrefrescar la página.
+
+En el front, archivo "show-posts.blade.php" a cada encabezado se le agregó:
+"
+{{-- Sort --}}
+                            @if ($sort=='id')
+
+                                @if ($direction == 'asc')
+                                    <i class="fa fa-sort-alpha-asc float-right mt-1" aria-hidden="true"></i>
+                                @else
+                                    <i class="fa fa-sort-alpha-desc float-right mt-1" aria-hidden="true"></i>
+                                @endif
+
+                            @else
+                                <i class="fa fa-sort float-right mt-1" aria-hidden="true"></i>
+                            @endif
+"
+*Donde está lo de " $sort=='' " ya iría el nombre al campo correspondiente dentro de las ''.
+Y donde se valida también el icono a mostrar según si ya se ha hecho clic y cambiando el acomodo en el campo correspondiente.
+
+
+
+
+
+--
