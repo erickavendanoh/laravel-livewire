@@ -8,9 +8,11 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <x-table>
 
-            <div class="px-6 py-4">
+            <div class="px-6 py-4 flex items-center">
                 {{-- <input type="text" wire:model.live="search"> --}}
-                <x-input type="text" class="w-full" placeholder="Escriba que quiere buscar" wire:model.live="search" />  <!--Componente de blade de los ya incluidos con Jetstream-->
+                <x-input type="text" class="flex-1 mr-4" placeholder="Escriba que quiere buscar" wire:model.live="search" />  <!--Componente de blade de los ya incluidos con Jetstream-->
+            
+                <livewire:create-post />
             </div>
 
             @if($posts->count()) {{--Se valida si existen "posts" por mostrar. Ósea que desde un inicio venga la variable con $posts con información, o que si se hayan encontrado coincidencias al momento de ir buscando--}}
@@ -19,7 +21,7 @@
                 <thead>
                     <tr>
                         <th
-                            class="cursor-pointer px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                            class="w-24 cursor-pointer px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                             wire:click="order('id')">
                             ID
 
