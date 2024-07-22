@@ -761,3 +761,43 @@ Para ese botón, el modal y lo que contenía el modal se emplearon componentes d
 Para los <input> y <textarea> empleados en el modal para crear un post, se empleó "  wire:model.defer="*atributo*" "  en lugar de "  wire:model.live="*atributo*" ". Ya que por ej. con " wire:model.defer="title" " es para asociar directamente el elemento HTML y el valor que vaya tomando con el atributo correspondiente del componente de Livewire, solo que la diferencia de hacerlo con " wire:model.live="title" " es que no se va ejecutando la función render() cada que se vaya modificando el atributo del componente, ósea cada que se vayan teclando valores en este caso, sino que ahora será hasta que se desencadene un evento que haga que se actualice la página o así. Esto es de utilidad para el rendimiento, en cuestión de que no se esté ejecutando la función render() cada vez que se vayan ingresando valores 
 
 
+
+
+
+Al principio cuando se creaba un post empleando el componente CreatePost, si bien si se creaba el registro en la BD había que cerrar el modal y refrescar la página pára poder ver el nuevo registro en el listado...
+esto ocurre debido a que cuando se escribe código y se le da funcionalidad a un cierto componente, esta queda encapsulada dentro del componente, es decir que solo funcionará a nivel del componente por lo que otros componentes o lugares a parte donde se emplee dicho componente no sabrán ni se enterarán de lo que haga o haya hecho en un momento dado dicho componente. Saaalvo, que se agregue una comunicación entre componentes, donde se define que cuando un componente realice una acción (evento) haya algo (oyente) en otro componente que detecte ese evento y ese otro componente que escucha realice una acción después.
+
+En este caso por ejemplo, en método save() dentro de CreatePost.php se agregó:
+"
+$this->dispatch('render');
+"
+*Así como:
+"
+$this->reset(['open', 'title', 'content']);
+"
+pero este ya fue más para resetear el valor de los atributos del componente, que tienen que ver con las entradas del formulario del modal así como para mostrarlo/ocultarlo
+Mientras que en ShowPosts.php se agregó en la parte de sus atributos:
+"
+protected $listeners = ['render' => 'render'];
+"
+donde es un arreglo en donde se indica primero el nombre del evento que va a "escuchar" y después el método propio que se ejecutará.
+
+
+No solo se pueden manejar eventos y oyentes entre componentes, sino que también se puede hacer que en scripts haya oyentes donde se realice algo en esos scripts cuando haya un evento de algún componente.
+Por ejemplo, se mostrará una alerta, de SweetAlert2, cuando se agregué un post:
+-Se agrega el CDN en la plantilla principal (resources/views/layouts/app.blade.php) ya que se empleará esta librería en varias vistas y front de componentes: " <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> "
+-En método save() de CreatePost.php se agrega: " $this->dispatch('alert'); "
+-En resources/views/layouts/app.blade.php, en parte de abajo, antes del "</body>" se agrega:
+"
+<script>
+            Livewire.on('alert', function(){
+                Swal.fire({
+                    title: "Good job!",
+                    text: "You clicked the button!",
+                    icon: "success"
+                });
+            })
+        </script>
+"
+donde con "Livewire.on()" se escucha un evento de un componente de Livewire desde un script, y donde primero se pasa como parámetro el nombre del evento y luego una función callback anónima, que se ejecutará cada que se escuche el evento.
+

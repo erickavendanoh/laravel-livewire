@@ -13,6 +13,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <!-- Styles -->
         <link rel="stylesheet" href="{{ asset('vendor/font-awesome-4.7.0/css/font-awesome.css') }}"> <!--Para iconos de Font Awesome-->
@@ -42,5 +43,16 @@
         @stack('modals')
 
         @livewireScripts
+
+
+        <script>
+            Livewire.on('alert', function(){
+                Swal.fire({
+                    title: "Good job!",
+                    text: "You clicked the button!",
+                    icon: "success"
+                });
+            })
+        </script>
     </body>
 </html>

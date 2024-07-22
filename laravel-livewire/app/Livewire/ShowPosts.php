@@ -11,6 +11,7 @@ class ShowPosts extends Component
     public $search;
     public $sort = 'id';
     public $direction = 'desc';
+    protected $listeners = ['render' => 'render']; //Arreglo que contendrá los eventos que este componente va a "oir" de otro componente con la función propia correspondiente que ejecutará cuando lo haga
     
     public function render()
     {
