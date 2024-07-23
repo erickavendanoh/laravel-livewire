@@ -1,5 +1,7 @@
 Curso: https://www.youtube.com/watch?v=Ax4pT8XDR-0&list=PLZ2ovOgdI-kWqCet33O0WezN14KShkwER&ab_channel=CodersFree
 
+*Ese curso estaba con una versión más antigua de Livewire, por lo que hubo cosas que se tuvieron que ir adaptando a la versión más reciente que estaba cuando se tomó el curso (v3.0), documentación: https://livewire.laravel.com/docs/quickstart
+
 
 
 
