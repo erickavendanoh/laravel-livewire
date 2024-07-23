@@ -801,3 +801,29 @@ Por ejemplo, se mostrará una alerta, de SweetAlert2, cuando se agregué un post
 "
 donde con "Livewire.on()" se escucha un evento de un componente de Livewire desde un script, y donde primero se pasa como parámetro el nombre del evento y luego una función callback anónima, que se ejecutará cada que se escuche el evento.
 
+Para personalizar la alerta, enviándole cierta información que se quiera mostrar, como el contenido del mensaje por ejemplo:
+-Modificar el envío del evento a manera que quede: " $this->dispatch('alert', message: 'El post se creó satisfactoriamente'); "
+-En parte de <script>:
+"
+<script>
+            window.addEventListener('alert', function(event){
+                const datos = event.detail;
+                Swal.fire({
+                    title: "Good job!",
+                    text: datos.message,
+                    icon: "success"
+                });
+            })
+        </script>
+"
+*Para poder recibir la información mandada desde el envío del evento del componente de Livewire se tuvo que sustituir "Livewire.on" por "window.addEventListener". 
+El parámetro "event" será el que contendrá la información enviada desde el evento del componente de Livewire, y para acceder a la información se hace con ".detail" y de ahí en adelante se accede a cada valor como si fuera un objeto JSON normal.
+
+
+
+
+
+Si se quiere que un evento de un componente lo escuche solo otro componente en específico y ya no todos los demás componentes que puedan estar involucrados, se puede especificar con "dispatch('*nombre del evento*')->to(*nombre del componente*::class)". Por ejemplo (en método save() en CreatePost.php): " $this->dispatch('render')->to(ShowPosts::class); "
+
+Cuando el evento que se esucha y el método propio en el componente que lo hace que se va a ejecutar se llaman igual solo se puede poner una vez y Livewire entenderá. Por ejemplo en ShowPost.php: " protected $listeners = ['render']; " quedó así. Donde antes estaba: " protected $listeners = ['render' => 'render']; ", de las dos formas se indica lo mismo, está escuchando el evento "render" de otro componente (en este caso sbaemos que del de CreatePost) y cuando este se emita (con dispatch()) se ejecutará su método propio "render()"
+

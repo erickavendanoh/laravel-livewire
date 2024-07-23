@@ -11,8 +11,9 @@ class ShowPosts extends Component
     public $search;
     public $sort = 'id';
     public $direction = 'desc';
-    protected $listeners = ['render' => 'render']; //Arreglo que contendrá los eventos que este componente va a "oir" de otro componente con la función propia correspondiente que ejecutará cuando lo haga
-    
+    // protected $listeners = ['render' => 'render']; //Arreglo que contendrá los eventos que este componente va a "oir" de otro componente con la función propia correspondiente que ejecutará cuando lo haga
+    protected $listeners = ['render']; //Lo mismo que el de arriba pero de forma abreviada, ya que cuando el evento que se esucha y el método propio que se va a ejecutar se llaman igual solo se puede poner una vez y Livewire entenderá
+
     public function render()
     {
         $posts = Post::where('title', 'like', '%' . $this->search . '%')

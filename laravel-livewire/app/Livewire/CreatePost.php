@@ -21,8 +21,8 @@ class CreatePost extends Component
 
         $this->reset(['open', 'title', 'content']); //reset() se emplea para resetar los valores de atributos de un componente. En este caso al estar relacionados directamente con elementos HTML (entradas de formulario del modal) también se "limpiaría" ese formulario. Así como resetear el valor de atributo "open" a false, que es con el que se controla si se muestra o no el formulario, con lo que al volver a false ya no se mostraría.
 
-        $this->dispatch('render'); //Evento llamado "render" que se quiere que componente ShowPost "escuche"
-        $this->dispatch('alert');
+        $this->dispatch('render')->to(ShowPosts::class); //Evento llamado "render" que se quiere que componente ShowPost "escuche" (en este caso está específico para que el evento "render" de este componente solo lo escuche el componente ShowPosts)
+        $this->dispatch('alert', message: 'El post se creó satisfactoriamente');
     }
     public function render()
     {

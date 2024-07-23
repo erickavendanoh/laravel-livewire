@@ -46,10 +46,11 @@
 
 
         <script>
-            Livewire.on('alert', function(){
+            window.addEventListener('alert', function(event){
+                const datos = event.detail;
                 Swal.fire({
                     title: "Good job!",
-                    text: "You clicked the button!",
+                    text: datos.message,
                     icon: "success"
                 });
             })
