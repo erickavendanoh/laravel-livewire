@@ -829,3 +829,56 @@ Si se quiere que un evento de un componente lo escuche solo otro componente en e
 
 Cuando el evento que se esucha y el método propio en el componente que lo hace que se va a ejecutar se llaman igual solo se puede poner una vez y Livewire entenderá. Por ejemplo en ShowPost.php: " protected $listeners = ['render']; " quedó así. Donde antes estaba: " protected $listeners = ['render' => 'render']; ", de las dos formas se indica lo mismo, está escuchando el evento "render" de otro componente (en este caso sbaemos que del de CreatePost) y cuando este se emita (con dispatch()) se ejecutará su método propio "render()"
 
+
+
+
+
+Para las validaciones en casos de que no se ingree ningún valor en los campos de algún formulario o se quiera que tengan ciertas características para considerarse válidos, y no obtener errores de SQL debido a también las restricciones que se le hayan puesto a esos respectivos campos desde la estructura de la BD como por ejemplo: " SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'title' cannot be null (Connection: mysql, SQL: insert into `posts` (`title`, `content`, `updated_at`, `created_at`) values (?, ?, 2024-07-24 14:58:05, 2024-07-24 14:58:05)) "...
+se emplearán "reglas de validación" o simplemente "validaciones".
+Por ej. para el caso del formulario para crear un post:
+-En CreatePost.php:
+se agrega en su parte de atributos:
+"
+//reglas de validación
+    protected $rules = [
+        'title' => 'required|max:10',
+        'content' => 'required|min:100'
+    ];
+"
+en su método save() :
+"
+$this->validate(); //verifica que los valores dados a los atributos del componente desde los elementos HTML cumplan con las respectivas reglas definidas en $rules, si es así hace todo lo que sigue dentro de este método, si no no hace nada de lo que sigue
+"
+-Ya con eso es suficiente para que no se trate de hacer la inserción si no se cumplen esas reglas pero tal cual no haría nada. Para señalar al usuario que debe cumplirse cierta regla o así, en create-post.blade.php:
+debajo de cada correspondiente input, ósea entrada de información que correspondería a la asignación de valor de algún atributo del componente:
+"
+@error('*nombre del atributo*')
+                    <span>
+                        {{$message}}
+                    </span>
+                @enderror
+"
+este solo pondría el texto que ya se incluye en "$message" que contiene lo que fallo respectivamente junto con el nombre del atributo.
+Para darle un estilo mejor, pero sin tanta complicación se hará uso de uno de los componentes de Jetstream "input-error.blade.php":
+
+
+Para que ahora esas validaciones sean dinámicas, es decir que los mensajes de error (si es el caso) no salgan hasta que el usuario quiera enviar el formulario sino que aparezcan a medida que el usuario va ingresando la información y ya cuando llegue a un punto donde no se cumpla la regla de validación correspondiente le salga el mensaje de error, por ejemplo si el máximo de carcateres para el valor de un atributo es 10 y el usuario ya llego a 11, aparezca el mensaje. O que si por ejemplo iba poniendo información y ya la quita toda salga el mensaje de que es requerido, y así:
+Por ejemplo:
+-En CreatePost.php se agrega:
+"
+//Método que se va a estar ejecutando cada vez que se vaya modificando algún atributo o propiedad del componente, donde dentro se estará validando si el valor que va obteniendo ese atributo o propiedad ya cumple con su regla de validación correspondiente
+    //*para que esto funcione, en el front en el "wire:model" de cada <input> habrá que quitarle el ".defer" y cambiarlo por el ".live"
+    public function updated($propertyName){
+        $this->validateOnly($propertyName);
+    }
+"
+-En su front, create-post.blade.php:
+"
+Se cambian los ".defer" de los " wire:model.defer="*nombre del atributo*" " por ".live" 
+"
+
+
+
+
+
+Estados de carga. Básicamente es poder mostrar un mensaje, animación o lo que sea mientras se está ejecutando cierto proceso, por ejemplo durante el tiempo que tome una inserción, actualización o en general una operación

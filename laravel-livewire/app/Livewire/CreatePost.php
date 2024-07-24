@@ -9,11 +9,26 @@ class CreatePost extends Component
 {
 
     public $open = false; //atributo booleano con el que se controlara si se muestra o no el modal
+    
     public $title, $content;
 
+    //reglas de validación
+    protected $rules = [
+        'title' => 'required|max:10',
+        'content' => 'required|min:100'
+    ];
+
+    //Método que se va a estar ejecutando cada vez que se vaya modificando algún atributo o propiedad del componente, donde dentro se estará validando si el valor que va obteniendo ese atributo o propiedad ya cumple con su regla de validación correspondiente
+    //*para que esto funcione, en el front en el "wire:model" de cada <input> habrá que quitarle el ".defer" y cambiarlo por el ".live"
+    public function updated($propertyName){
+        $this->validateOnly($propertyName);
+    }
     
     public function save()
     {
+
+        $this->validate(); //verifica que los valores dados a los atributos del componente desde los elementos HTML cumplan con las respectivas reglas definidas en $rules, si es así hace todo lo que sigue dentro de este método, si no no hace nada de lo que sigue
+
         Post::create([
             'title' => $this->title,
             'content' => $this->content
