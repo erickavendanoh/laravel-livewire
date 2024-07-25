@@ -859,10 +859,10 @@ debajo de cada correspondiente input, ósea entrada de información que correspo
                 @enderror
 "
 este solo pondría el texto que ya se incluye en "$message" que contiene lo que fallo respectivamente junto con el nombre del atributo.
-Para darle un estilo mejor, pero sin tanta complicación se hará uso de uno de los componentes de Jetstream "input-error.blade.php":
+Para darle un estilo mejor, pero sin tanta complicación se hará uso de uno de los componentes de Jetstream "input-error.blade.php", por ej.: " <x-input-error for="title" /> "
 
 
-Para que ahora esas validaciones sean dinámicas, es decir que los mensajes de error (si es el caso) no salgan hasta que el usuario quiera enviar el formulario sino que aparezcan a medida que el usuario va ingresando la información y ya cuando llegue a un punto donde no se cumpla la regla de validación correspondiente le salga el mensaje de error, por ejemplo si el máximo de carcateres para el valor de un atributo es 10 y el usuario ya llego a 11, aparezca el mensaje. O que si por ejemplo iba poniendo información y ya la quita toda salga el mensaje de que es requerido, y así:
+Para que ahora esas validaciones sean dinámicas, es decir que los mensajes de error (si es el caso) no salgan hasta que el usuario quiera enviar el formulario sino que aparezcan a medida que el usuario va ingresando la información y ya cuando llegue a un punto donde no se cumpla la regla de validación correspondiente le salga el mensaje de error, por ejemplo si el máximo de caracteres para el valor de un atributo es 10 y el usuario ya llego a 11, aparezca el mensaje. O que si por ejemplo iba poniendo información y ya la quita toda salga el mensaje de que es requerido, y así:
 Por ejemplo:
 -En CreatePost.php se agrega:
 "
@@ -882,3 +882,27 @@ Se cambian los ".defer" de los " wire:model.defer="*nombre del atributo*" " por 
 
 
 Estados de carga. Básicamente es poder mostrar un mensaje, animación o lo que sea mientras se está ejecutando cierto proceso, por ejemplo durante el tiempo que tome una inserción, actualización o en general una operación
+
+-Por ejemplo, que cuando se cree un post mientras se está cargando en la BD en lugar de que aparezca el botón "CREAR POST" aparezca algo que indica que está cargando, como un mensaje:
+En create-post.blade.php, en parte de "<x-slot name="footer">" se agrega:
+"
+<span wire:loading wire:target="save">Cargando...</span>
+"
+con "wire:loading" es como si se le pusiera al elemento HTML " style="display:none;" " ya por defecto pero solo mientras se haga algún cambio en general en el componente o se realice algún proceso en específico y solo en ese caso cambiaría a " style="display:inline-block;" ", y con " wire:target="save" " se indica que se muestre mientras se ejecuta el método save()
+*Por defecto al poner "wire:loading" a un elemento HTML, y cuando se realice lo que se indicaba que esperara que cargara ósea cuando ya se deba mostrar se le aplicará el " style="display:inline-block;" " por defecto, pero si se quiere otro tipo de "display" se puede poner por ejemplo " <span wire:loading.flex wire:target="save">Cargando...</span> " para que se vea con " style="display:flex;" ", mismo caso si se pone "grid", "inline", "table"
+Y para que mientras se muestre ese mensaje se oculte el botón de "CREAR POST" este quedaría así: " <x-danger-button wire:click="save" wire:loading.remove wire:target="save"> " donde básicamente se le indica que se "remueva" (se oculte) mientras se está cargando algo, en esete caso el método save(), lo que corresponde a lo de " wire:target="save" "
+
+-Ahora, si por ejemplo se quiere que en lugar de ocultar el botón "CREAR POST" y mostrar en su lugar el mensaje, sino que ahora se ponga de color azul el botón mientras se está cargando:
+" <x-danger-button wire:click="save" wire:loading.class="bg-blue-500" wire:target="save"> " donde se indica que mientras se está cargando método save() su atributo class sea "bg-blue-500"
+
+-Ahora que si por ejemplo, se quiere solo deshabilitar el boton mientras se está cargando:
+" <x-danger-button wire:click="save" wire:loading.attr="disabled" wire:target="save"> "
+con esto, en un proceso que dure mucho mientras este se esté cargando aunque el usuario de clic al botón este no hará nada.
+Ya solo se le definirá que tenga un estilo más opaco cuando se encuentre dehabilitado, agregándole " class="disabled:opacity-25" ", quedando:
+" <x-danger-button wire:click="save" wire:loading.attr="disabled" wire:target="save" class="disabled:opacity-25"> "
+
+
+
+
+
+-

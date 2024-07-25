@@ -40,9 +40,10 @@
                 Cancelar
             </x-secondary-button>
 
-            <x-danger-button wire:click="save">
+            <x-danger-button wire:click="save" wire:loading.attr="disabled" wire:target="save" class="disabled:opacity-25">
                 Crear post
             </x-danger-button>
+
         </x-slot>
 
     </x-dialog-modal>
