@@ -12,6 +12,18 @@
         </x-slot>
 
         <x-slot name="content">
+
+            <div wire:loading wire:target="image" class='mb-4'> 
+                <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+                    <p class="font-bold">Imagen cargando</p>
+                    <p class="text-sm">Espere un momento hasta que la imagen se haya procesado</p>
+                </div>
+            </div>
+
+            <!--vista previa de imagen seleccionada-->
+            @if ($image)
+                <img class="mb-4" src="{{$image->temporaryUrl()}}">
+            @endif
             
             <div class="mb-4">
                 <!--Componente de blade de los ya incluidos con Jetstream-->
@@ -32,6 +44,11 @@
                 <x-input-error for="content" />
             </div>
 
+            <div>
+                <input type="file" wire:model.live="image" />
+                <x-input-error for="image" />
+            </div>
+
         </x-slot>
 
         <x-slot name="footer">
@@ -40,7 +57,7 @@
                 Cancelar
             </x-secondary-button>
 
-            <x-danger-button wire:click="save" wire:loading.attr="disabled" wire:target="save" class="disabled:opacity-25">
+            <x-danger-button wire:click="save" wire:loading.attr="disabled" wire:target="save, image" class="disabled:opacity-25">
                 Crear post
             </x-danger-button>
 

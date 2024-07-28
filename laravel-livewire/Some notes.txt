@@ -905,4 +905,108 @@ Ya solo se le definirá que tenga un estilo más opaco cuando se encuentre dehab
 
 
 
--
+Ahora se implementará el poder subir imágenes desde el modal para crear un post, donde una vez que se seleccione una se muestre una vista previa de la misma igual dentro del modal.
+-En la migración que crea la tabla "posts" (2024_06_29_201731_create_posts_table.php) se agrega el campo de tipo string que almacenará la url de la imagen:
+"
+$table->string('image');
+"
+
+-En config/filesystems.php se cambia de "local" a "public", esto es para indicar que el disco que se quiere emplear para almacenar en este caso las imagenes sea el público. Será la carpeta o disco donde se almacenarán las imagenes a crear con faker en el factory así como las que se vayan subiendo. De hecho ahí mismo dentro del archivo filesystemas.php más abajo dentro de arreglo "disks" vienen definidos los valores de los discos o carpetas y a que rutas apuntan cada uno.
+*Más explicación acerca de los discos en documentación: https://laravel.com/docs/11.x/filesystem
+
+*También asegurarnos de que esté creado el "link simbólico" de "storage" dentro de public/ (ósea que este la carpeta public/storage), si no, esto se logra con comando: " php artisan storage:link " 
+
+-Luego, en el Factory (PostFactory.php) se define la parte que estará creando imágenes con faker:
+"
+'image' => 'posts/' . $this->faker->image('public/storage/posts', 640, 480, null, false) //public/storage/posts/image1 //image1 //posts/image1 
+"
+básicamente el método image() de faker recibe como parámetros primero la ubicación donde se guardarán las imágenes (en este caso dentro de carpeta public/storage del proyecto dentro de una carpeta que se generará dentro de esa ubicación llamada "posts", esto desde el Seeder), luego el ancho y alto de la imagen, luego en donde está el "null" ahí antes se indicaba una categoría en base a la cuál se crearían imágenes pero faker ya lo quito y ahora solo va null porque ya siempre genera imagenes con colores fijos y un texto por defecto, y luego un valor booleano donde si se pone "true" es para que ponga toda la ruta de la imagen (por ej. public/storage/posts/image1) y si se pone "false" solo almacenará el nombre (por ej. image1). Pero como lo que buscamos es que se almacene de esta forma "posts/image1" por eso se pone "false", para que solo genere el "image1" por ejemplo y se le concatena al principio lo de "posts/"
+
+-Ahora para que se pueda generar la carpeta "posts" dentro de "/public/storage", como faker no tiene la capacidad de crear directorios esto se hará desde el seeder (DatabaseSeeder.php):
+"
+use Illuminate\Support\Facades\Storage;
+
+Storage::deleteDirectory('public/posts');
+Storage::makeDirectory('public/posts'); 
+"
+Donde empleando el Facade de Storage y su método estático "makeDirectory()" se le indica el nombre de la carpeta o directorio que se quiere crear cada vez que se ejecuta el seeder, que por defceto será dentro de ruta "public/storage" (public por lo previamente definido en filesystems.php, y ya con eso faker si podrá almacenar en ruta public/storage/posts como se le indicó)
+La línea que elimina la carpeta "posts" al principio es por si se vuelven a correr las migraciones con el fresh y los seeders, ya que con ese comando si se borran las tablas y registros en ellas y se vuelven a crear pero la carpeta "posts" y las imágenes dentro de ellas seguirían existiendo, entonces para no generar conflictos si se vuelven a ejecutar los Seeder y/o en el caso de que se quiera borrar todo y volver a crearlo otra vez se pone esa primer línea donde se elimina si existe la carpeta y a vuelve a crear después
+
+-Se ejecuta comando " php artisan migrate:fresh --seed " con el cuál se eliminan todas las tablas que se tengan creadas hata el momento en la BD y después se vuelvan a ejecutar los seeders (con lo que se deberían crear y poblar nuevamente estas)
+
+*Si se hace todo esto hasta el momento y no se descargan las imágenes dentro de la carpeta indicada es debido a un error que llega a tener faker, para solucionarlo:
+-En archivo vendor\fakerphp\faker\src\Faker\Provider\Image.php a partir de línea 145 agregar las siguientes líneas de código:
+curl_setopt($ch, CURLOPT_FILE, $fp); //línea existente
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);//nueva línea
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);//nueva línea
+$success = curl_exec($ch) && curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200;//línea existente 
+-Se vuelve a ejecutar comando " php artisan migrate:fresh --seed "
+
+
+-Ya en el componente CreatePost... 
+para poder subir archivos se debe emplear libreria "WithFileUploads", por lo que en el back:
+*en las importaciones:
+"
+use Livewire\WithFileUploads;
+"
+*dentro de la clase:
+"
+*use WithFileUploads;
+"
+*se agrega atributo "$image" que será el que esté relacionado con las imagenes subidas en un momento dado
+*Se agrega en $rules: " 'image' => 'required|image|max:2048' " donde en "max:" se indica el tamaño (en bytes) máximo que podrán tener los archivos (2048=2MB)
+
+En su front, se agrega el input file correspondiente, indicando que estará relacionado con atributo "$image":
+"
+<div>
+                <input type="file" wire:model.live="image" />
+                <x-input-error for="image" />
+            </div>
+"
+
+
+-Las imagenes que se vayan seleccionando al hacer clic en el input file se irán guardando dentro de una carpeta de archivos temporales en storage/app/livewire-tmp, por lo que para la vista previa se recuperara la ruta de las imagenes que se vayan seleccionando que se van guardando ahí también:
+*En front de CreatePost:
+"
+ <!--vista previa de imagen seleccionada-->
+            @if ($image)
+                <img class="mb-4" src="{{$image->temporaryUrl()}}">
+            @endif
+"
+
+*Para que se muestre una alerta al usuario de que la imagen se está subiendo:
+"
+<div wire:loading wire:target="image" class='mb-4'> 
+                <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+                    <p class="font-bold">Imagen cargando</p>
+                    <p class="text-sm">Espere un momento hasta que la imagen se haya procesado</p>
+                </div>
+            </div>
+"
+se le pone el "wire:loading" al div que contiene la alerta y con el " wire:target="iamge" " se le indica que se muestre hasta que $image ya tenga su valor asignado, que es cuando ya se proceso bien la imagen
+
+*También se indicará que se deshabilite el botón "CREAR POST" mientras se está procesando la imagen, esto ya que hasta que no se haya procesado bien la imagen el valor de $image seguirá siendo null entonces si se cliquea el botón fallará la validación aunque ya se haya seleccionado una imagen:
+se agrega en el botón "image", quedando: " <x-danger-button wire:click="save" wire:loading.attr="disabled" wire:target="save, image" class="disabled:opacity-25"> "
+
+
+-Ahora para que las imagenes que se vayan seleccionando se vayan guardando dentro de public/storage/posts (no se pueden dejar dentro de storage/app/livewire-tmp, que es donde se van guardando cada que se seleccionan, porque cada cierto tiempo los archivos ahí dentro se borran):
+*IMPORTANTE: para no obtener posible error de SQL cuando se quiera cargar el registro ya con imagen relacionado a "General error: 1364 Field 'image' doesn't have a default value (Connection: mysql, SQL: insert into `posts` (`title`, `content`, `updated_at`, `created_at`) values (grfwds, wdcsa, 2024-07-28 17:07:49, 2024-07-28 17:07:49))":
+En modelo Post.php agregar dentro del $fillable ", 'image'"
+
+En el back de CreatePost, dentro de método save():
+"
+ $image = $this->image->store('posts');
+"
+con "$this->image->store('posts');" se indica que la imagen se almacene en carpeta "posts", y la variable "$image" (independiente al atributo $image) almacenará la ruta resultante de la imagen.
+Luego:
+"
+Post::create([
+            'title' => $this->title,
+            'content' => $this->content,
+            'image' => $image
+        ]);
+"
+se almacena en campo "image" en tabla en BD la ruta
+También se agrega en el reset el campo "image": "  $this->reset(['open', 'title', 'content', 'image']); "
+
+
