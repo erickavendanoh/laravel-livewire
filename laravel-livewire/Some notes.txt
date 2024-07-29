@@ -989,7 +989,7 @@ se le pone el "wire:loading" al div que contiene la alerta y con el " wire:targe
 se agrega en el botón "image", quedando: " <x-danger-button wire:click="save" wire:loading.attr="disabled" wire:target="save, image" class="disabled:opacity-25"> "
 
 
--Ahora para que las imagenes que se vayan seleccionando se vayan guardando dentro de public/storage/posts (no se pueden dejar dentro de storage/app/livewire-tmp, que es donde se van guardando cada que se seleccionan, porque cada cierto tiempo los archivos ahí dentro se borran):
+-Ahora para que las imagenes que se vayan seleccionando se vayan guardando dentro de public/storage/posts (en mi caso quizás por cuestión de temas con los discos y así se guardan en storage/app/posts) (no se pueden dejar dentro de storage/app/livewire-tmp, que es donde se van guardando cada que se seleccionan, porque cada cierto tiempo los archivos ahí dentro se borran):
 *IMPORTANTE: para no obtener posible error de SQL cuando se quiera cargar el registro ya con imagen relacionado a "General error: 1364 Field 'image' doesn't have a default value (Connection: mysql, SQL: insert into `posts` (`title`, `content`, `updated_at`, `created_at`) values (grfwds, wdcsa, 2024-07-28 17:07:49, 2024-07-28 17:07:49))":
 En modelo Post.php agregar dentro del $fillable ", 'image'"
 
