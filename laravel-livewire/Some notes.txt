@@ -1010,3 +1010,10 @@ se almacena en campo "image" en tabla en BD la ruta
 También se agrega en el reset el campo "image": "  $this->reset(['open', 'title', 'content', 'image']); "
 
 
+
+
+
+Componentes de anidamiento.
+Básicamente es cuando un componente se carga varias veces dentro de otro, por ejemplo cuando en un foreach por cada elemento se carga el componente. Se verá el tema en relación a poder mostrar un modal que permita al usuario editar cada registro, por lo que por cada registro se podrá abrir un modal que contenga su respectiva información y se pueda editar.
+Cuando se emplean componentes de anidamiento cada componente debe llevar una llave, que debe ser un valor único, esto para que Livewire pueda diferenciar entre cada uno, y así pdoer evitar errores relacionados a no definirla.
+
