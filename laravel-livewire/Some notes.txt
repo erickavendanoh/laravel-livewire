@@ -1015,5 +1015,43 @@ También se agrega en el reset el campo "image": "  $this->reset(['open', 'title
 
 Componentes de anidamiento.
 Básicamente es cuando un componente se carga varias veces dentro de otro, por ejemplo cuando en un foreach por cada elemento se carga el componente. Se verá el tema en relación a poder mostrar un modal que permita al usuario editar cada registro, por lo que por cada registro se podrá abrir un modal que contenga su respectiva información y se pueda editar.
-Cuando se emplean componentes de anidamiento cada componente debe llevar una llave, que debe ser un valor único, esto para que Livewire pueda diferenciar entre cada uno, y así pdoer evitar errores relacionados a no definirla.
+Cuando se emplean componentes de anidamiento cada componente debe llevar una llave, que debe ser un valor único, esto para que Livewire pueda diferenciar entre cada uno, y así pdoer evitar errores relacionados a no definirla
+
+
+"php artisan make:livewire EditPost"
+
+EditPost.php:
+
+
+edit-post.blade.php:
+
+
+En show-posts.blade.php:
+en última columna donde antes estaba " <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a> " ahora ira " <livewire:edit-post :$post /> " (tener eso es lo mismo que tener " <livewire:edit-post :$post="{{$post}}" /> ", solo que de forma abreviada ya que el atributo del componente y la variable que se le esta pasando como valor se llaman igual)
+A la columna donde dentro está ese componente de EditPost (" <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"> ") se le quito lo de "text-right" ya que por ello todo el contenido del componente siempre se mostraba hasta la derecha
+
+Se definieron estilos que empleara el componente de EditPost, se crea archivo "buttons.css" dentro de resources/css y se definen estilos de Tailwind
+buttons.css:
+"
+.btn{
+    @apply font-bold text-white py-2 px-4 rounded cursor-pointer;
+}
+
+.btn-red{
+    @apply bg-red-600 hover:bg-red-500
+}
+
+.btn-blue{
+    @apply bg-blue-600 hover:bg-blue-500
+}
+
+.btn-green{
+    @apply bg-green-600 hover:bg-green-500
+}
+"
+
+se importa ese archivo en el resources/css/app.css:
+" @import 'buttons.css'; "
+
+se ejecuta comando " npm run dev "
 
