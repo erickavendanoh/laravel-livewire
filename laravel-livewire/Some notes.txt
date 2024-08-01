@@ -1026,8 +1026,11 @@ EditPost.php:
 edit-post.blade.php:
 
 
+Para poder sincronizar los elementos HTML directamente con las propiedades de un objeto, se deben tener las reglas de validación para cada atributo en el back. Al definir las reglas de validación ya se permite emplear directamente las propiedades de un objeto, de lo contrario no se podrá ni aparecerá nada en el front.
+
+
 En show-posts.blade.php:
-en última columna donde antes estaba " <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a> " ahora ira " <livewire:edit-post :$post /> " (tener eso es lo mismo que tener " <livewire:edit-post :$post="{{$post}}" /> ", solo que de forma abreviada ya que el atributo del componente y la variable que se le esta pasando como valor se llaman igual)
+en última columna donde antes estaba " <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a> " ahora ira " <livewire:edit-post :$post /> " (tener eso es lo mismo que tener " <livewire:edit-post :$post="{{$post}}" /> ", solo que de forma abreviada ya que el atributo del componente y la variable que se le esta pasando como valor se llaman igual). Los ":" le indican a Livewire que se está pasando como valor una variable de PHP
 A la columna donde dentro está ese componente de EditPost (" <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"> ") se le quito lo de "text-right" ya que por ello todo el contenido del componente siempre se mostraba hasta la derecha
 
 Se definieron estilos que empleara el componente de EditPost, se crea archivo "buttons.css" dentro de resources/css y se definen estilos de Tailwind

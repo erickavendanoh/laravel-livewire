@@ -9,7 +9,15 @@
         </x-slot>
 
         <x-slot name="content">
-            
+            <div class="mb-4">
+                <x-label value="Título del post" />
+                <x-input wire:model.live="post.title" type="text" class="w-full" />
+            </div>
+
+            <div>
+                <x-label value="Contenido del post" />
+                <textarea wire:model.live="post.content" rows="6" class="form-control w-full"></textarea>
+            </div>
         </x-slot>
 
         <x-slot name="footer">
