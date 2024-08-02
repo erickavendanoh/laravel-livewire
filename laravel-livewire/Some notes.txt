@@ -1015,22 +1015,14 @@ También se agrega en el reset el campo "image": "  $this->reset(['open', 'title
 
 Componentes de anidamiento.
 Básicamente es cuando un componente se carga varias veces dentro de otro, por ejemplo cuando en un foreach por cada elemento se carga el componente. Se verá el tema en relación a poder mostrar un modal que permita al usuario editar cada registro, por lo que por cada registro se podrá abrir un modal que contenga su respectiva información y se pueda editar.
-Cuando se emplean componentes de anidamiento cada componente debe llevar una llave, que debe ser un valor único, esto para que Livewire pueda diferenciar entre cada uno, y así pdoer evitar errores relacionados a no definirla
+Cuando se emplean componentes de anidamiento cada componente debe llevar una llave, que debe ser un valor único, esto para que Livewire pueda diferenciar entre cada uno, y así pdoer evitar errores relacionados al no definirla
 
 
 "php artisan make:livewire EditPost"
 
-EditPost.php:
-
-
-edit-post.blade.php:
-
-
-Para poder sincronizar los elementos HTML directamente con las propiedades de un objeto, se deben tener las reglas de validación para cada atributo en el back. Al definir las reglas de validación ya se permite emplear directamente las propiedades de un objeto, de lo contrario no se podrá ni aparecerá nada en el front.
-
 
 En show-posts.blade.php:
-en última columna donde antes estaba " <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a> " ahora ira " <livewire:edit-post :$post /> " (tener eso es lo mismo que tener " <livewire:edit-post :$post="{{$post}}" /> ", solo que de forma abreviada ya que el atributo del componente y la variable que se le esta pasando como valor se llaman igual). Los ":" le indican a Livewire que se está pasando como valor una variable de PHP
+en última columna donde antes estaba " <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a> " ahora ira " <livewire:edit-post :$post :key="$post->id" /> " (tener eso es lo mismo que tener " <livewire:edit-post :$post="{{$post}}" :key="$post->id" /> ", solo que de forma abreviada ya que el atributo del componente y la variable que se le esta pasando como valor se llaman igual). Los ":" le indican a Livewire que se está pasando como valor una variable de PHP
 A la columna donde dentro está ese componente de EditPost (" <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"> ") se le quito lo de "text-right" ya que por ello todo el contenido del componente siempre se mostraba hasta la derecha
 
 Se definieron estilos que empleara el componente de EditPost, se crea archivo "buttons.css" dentro de resources/css y se definen estilos de Tailwind
@@ -1058,3 +1050,129 @@ se importa ese archivo en el resources/css/app.css:
 
 se ejecuta comando " npm run dev "
 
+
+***Ocurrió una situación: a como se muestra en el video no funciona la parte de actualizar el post, quizás por la diferencia de versiones. Aunque en la versión actual (3.0 al momento de hacer el curso) no encontre una forma como tal de hacer lo mismo con data binding recibiendo un post de modelo Post como parámetro, sino que se tendrá que hacer "desestructurando" (concepto de JS donde se recibe el objeto y se asignan sus atributos a una variable cada uno y así se maneja, ya que se tiene listo nuevamente se "construye" en la actualización con los nuevos valores), y de hecho así viene un ejemplo también en la documentación oficial de Livewire, que es como se hará.
+
+**Como se muestra en video:
+Se menciona que para poder sincronizar los elementos HTML directamente con las propiedades de un objeto, se deben tener las reglas de validación para cada atributo en el back. Al definir las reglas de validación ya se permite emplear directamente las propiedades de un objeto, de lo contrario no se podrá ni aparecerá nada en el front.
+
+EditPost.php:
+<?php
+
+namespace App\Livewire;
+
+use App\Models\Post;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+
+class EditPost extends Component
+{
+    use WithFileUploads;
+
+    public $open = false; //Para mostrar/ocultar modal
+    public $post; //propiedad que tendrá como valor el post que se quiera editar
+    public $image;
+
+    protected $rules = [
+        'post.title' => 'required',
+        'post.content' => 'required',
+    ];
+
+    public function mount(Post $post){
+        $this->post = $post;
+    }
+
+    public function save(){
+        $this->validate();
+
+        //Si se vuelve a seleccionar otra imagen al editar el post, se debe eliminar la imagen que había en ese post, luego subir la nueva y actualizar la url que se tenía en BD con la url de la nueva imagen
+        if($this->image){ //se pregunta si se le dió valor al campo imagen (significa que se seleccionó algo en el input file)
+            Storage::delete([$this->post->image]); //se borra del storage la imagen que había
+            $this->post->image = $this->image->store('posts'); //se sube la nueva imagen a la vez que la url que genera esa línea de código se almacena en el campo de ese post en la BD
+        }
+
+        $this->post->save(); //Como estan enlazados sus atributos a los elementos HTML el valor que haya quedado en estos se actualizará en esos atributos
+
+        $this->reset(['open', 'image']);
+
+        $this->emitTo('show-posts', 'render');
+        $this->dispatch('alert', message: 'El post se actualizó satisfactoriamente');
+    }
+
+    public function render()
+    {
+        return view('livewire.edit-post');
+    }
+}
+
+
+edit-post.blade.php:
+<div>
+    <a class="btn btn-green" wire:click="$set('open', true)">
+        <i class="fa fa-pencil-square"></i>
+    </a>
+
+    <x-dialog-modal wire:model.live="open">
+        <x-slot name="title">
+            Editar el post {{$post->title}}
+        </x-slot>
+
+        <x-slot name="content">
+
+            <div wire:loading wire:target="image" class='mb-4'> 
+                <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+                    <p class="font-bold">Imagen cargando</p>
+                    <p class="text-sm">Espere un momento hasta que la imagen se haya procesado</p>
+                </div>
+            </div>
+
+            <!--vista previa de imagen seleccionada-->
+            @if ($image)
+                <img class="mb-4" src="{{$image->temporaryUrl()}}">
+            @else
+                <img src="{{Storage::url($post->image)}}" alt="" >
+            @endif
+
+            <div class="mb-4">
+                <x-label value="Título del post" />
+                <x-input wire:model.live="post.title" type="text" class="w-full" />
+            </div>
+
+            <div>
+                <x-label value="Contenido del post" />
+                <textarea wire:model.live="post.content" rows="6" class="form-control w-full"></textarea>
+            </div>
+
+            <div>
+                <input type="file" wire:model.live="image" />
+                <x-input-error for="image" />
+            </div>
+
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$set('open', false)">
+                Cancelar
+            </x-secondary-button>
+
+            <!--Si bien se le coloco el wire:loading con " .attr="diabled" " para que se desactivara mientras e hace el proceso de actualización, ya no se le coloco el "wire:target" (como en create-post.blade.php) ya que al finalizar luego luego se cierra el modal y sale la alerta entonces ya no tiene mucho caso ponerle eso que lo que haría es volverlo a activar una vez finalizado el proceso-->
+            <x-danger-button wire:click="save" wire:loading.attr="disabled" class="disabled:opacity-25">
+                Actualizar
+            </x-danger-button>
+        </x-slot>
+    </x-dialog-modal>
+</div>
+
+
+
+
+**Como se hizo de forma independiente:
+*Maneras sobre como hacer una actualización segura y prevenir riesgos de posibles ataques desde el front (por uso de id's) en documentación oficial, a partir de sección "Don't trust property values": https://livewire.laravel.com/docs/properties#data-binding 
+Por ahora yo lo hice así directo
+
+EditPost.php:
+
+
+
+edit-post.blade.php:

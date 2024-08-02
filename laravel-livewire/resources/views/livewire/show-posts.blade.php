@@ -95,7 +95,7 @@
                                 </p>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <livewire:edit-post :$post />
+                                <livewire:edit-post :$post :key="$post->id" />
                             </td>
                         </tr>
                     @endforeach
