@@ -34,16 +34,14 @@ class EditPost extends Component
 
         //Si se vuelve a seleccionar otra imagen al editar el post, se debe eliminar la imagen que había en ese post, luego subir la nueva y actualizar la url que se tenía en BD con la url de la nueva imagen
         if($this->image){ //se pregunta si se le dió valor al campo imagen (significa que se seleccionó algo en el input file)
-            Storage::delete([$this->imagePost]); //se borra del storage la imagen que había
-            $imageInsert = $this->image->store('posts'); //se sube la nueva imagen a la vez que la url que genera esa línea de código se almacena en el campo de ese post en la BD
-        }else{
-            $imageInsert = $this->imagePost; //si no, se deja en variable image la imagen que ya traía el post originalmente
+            Storage::delete($this->imagePost); //se borra del storage la imagen que había
+            $this->imagePost = $this->image->store('public/posts'); //se sube la nueva imagen a la vez que la url que genera esa línea de código será ahora el nuevo valor en el atributo "imagePost"
         }
 
         $post->update([
             'title' => $this->title,
             'content' => $this->content,
-            'imagen' => $imageInsert
+            'image' => $this->imagePost //Se guarda en campo "image" del registro de la BD ya sea el valor (ruta) que se tenía desde antes (si no se selecciono ninguna imagen nueva) o el nuevo valor (ruta) de la nueva imagen si es que se selecciono otra, según sea el caso
         ]);
 
         $this->reset(['open', 'image']);

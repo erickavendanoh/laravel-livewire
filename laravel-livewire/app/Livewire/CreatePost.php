@@ -27,7 +27,7 @@ class CreatePost extends Component
         $this->validate(); //verifica que los valores dados a los atributos del componente desde los elementos HTML cumplan con las respectivas reglas definidas en $rules, si es así hace todo lo que sigue dentro de este método, si no no hace nada de lo que sigue
 
 
-        $image = $this->image->store('posts');
+        $image = $this->image->store('public/posts');
 
         Post::create([
             'title' => $this->title,

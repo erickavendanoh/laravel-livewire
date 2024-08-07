@@ -918,9 +918,9 @@ $table->string('image');
 
 -Luego, en el Factory (PostFactory.php) se define la parte que estará creando imágenes con faker:
 "
-'image' => 'posts/' . $this->faker->image('public/storage/posts', 640, 480, null, false) //public/storage/posts/image1 //image1 //posts/image1 
+'image' => 'public/posts/' . $this->faker->image('public/storage/posts', 640, 480, null, false) //public/storage/posts/image1 //image1 //posts/image1 
 "
-básicamente el método image() de faker recibe como parámetros primero la ubicación donde se guardarán las imágenes (en este caso dentro de carpeta public/storage del proyecto dentro de una carpeta que se generará dentro de esa ubicación llamada "posts", esto desde el Seeder), luego el ancho y alto de la imagen, luego en donde está el "null" ahí antes se indicaba una categoría en base a la cuál se crearían imágenes pero faker ya lo quito y ahora solo va null porque ya siempre genera imagenes con colores fijos y un texto por defecto, y luego un valor booleano donde si se pone "true" es para que ponga toda la ruta de la imagen (por ej. public/storage/posts/image1) y si se pone "false" solo almacenará el nombre (por ej. image1). Pero como lo que buscamos es que se almacene de esta forma "posts/image1" por eso se pone "false", para que solo genere el "image1" por ejemplo y se le concatena al principio lo de "posts/"
+básicamente el método image() de faker recibe como parámetros primero la ubicación donde se guardarán las imágenes (en este caso dentro de carpeta public/storage del proyecto dentro de una carpeta que se generará dentro de esa ubicación llamada "posts", esto desde el Seeder), luego el ancho y alto de la imagen, luego en donde está el "null" ahí antes se indicaba una categoría en base a la cuál se crearían imágenes pero faker ya lo quito y ahora solo va null porque ya siempre genera imagenes con colores fijos y un texto por defecto, y luego un valor booleano donde si se pone "true" es para que ponga toda la ruta de la imagen (por ej. public/storage/posts/image1) y si se pone "false" solo almacenará el nombre (por ej. image1). Pero como lo que buscamos es que se almacene de esta forma "public/posts/image1" por eso se pone "false", para que solo genere el "image1" por ejemplo y se le concatena al principio lo de "public/posts/"
 
 -Ahora para que se pueda generar la carpeta "posts" dentro de "/public/storage", como faker no tiene la capacidad de crear directorios esto se hará desde el seeder (DatabaseSeeder.php):
 "
@@ -989,15 +989,15 @@ se le pone el "wire:loading" al div que contiene la alerta y con el " wire:targe
 se agrega en el botón "image", quedando: " <x-danger-button wire:click="save" wire:loading.attr="disabled" wire:target="save, image" class="disabled:opacity-25"> "
 
 
--Ahora para que las imagenes que se vayan seleccionando se vayan guardando dentro de public/storage/posts (en mi caso quizás por cuestión de temas con los discos y así se guardan en storage/app/posts) (no se pueden dejar dentro de storage/app/livewire-tmp, que es donde se van guardando cada que se seleccionan, porque cada cierto tiempo los archivos ahí dentro se borran):
+-Ahora para que las imagenes que se vayan seleccionando se vayan guardando dentro de public/storage/posts (en mi caso quizás por cuestión de temas con los discos y así se guardan en storage/app/posts por defecto, por ello tengo que andar indicando que sea en "public/") (no se pueden dejar dentro de storage/app/livewire-tmp, que es donde se van guardando cada que se seleccionan, porque cada cierto tiempo los archivos ahí dentro se borran):
 *IMPORTANTE: para no obtener posible error de SQL cuando se quiera cargar el registro ya con imagen relacionado a "General error: 1364 Field 'image' doesn't have a default value (Connection: mysql, SQL: insert into `posts` (`title`, `content`, `updated_at`, `created_at`) values (grfwds, wdcsa, 2024-07-28 17:07:49, 2024-07-28 17:07:49))":
 En modelo Post.php agregar dentro del $fillable ", 'image'"
 
 En el back de CreatePost, dentro de método save():
 "
- $image = $this->image->store('posts');
+ $image = $this->image->store('public/posts');
 "
-con "$this->image->store('posts');" se indica que la imagen se almacene en carpeta "posts", y la variable "$image" (independiente al atributo $image) almacenará la ruta resultante de la imagen.
+con "$this->image->store('public/posts');" se indica que la imagen se almacene en carpeta "posts", y la variable "$image" (independiente al atributo $image) almacenará la ruta resultante de la imagen.
 Luego:
 "
 Post::create([
@@ -1089,7 +1089,7 @@ class EditPost extends Component
         //Si se vuelve a seleccionar otra imagen al editar el post, se debe eliminar la imagen que había en ese post, luego subir la nueva y actualizar la url que se tenía en BD con la url de la nueva imagen
         if($this->image){ //se pregunta si se le dió valor al campo imagen (significa que se seleccionó algo en el input file)
             Storage::delete([$this->post->image]); //se borra del storage la imagen que había
-            $this->post->image = $this->image->store('posts'); //se sube la nueva imagen a la vez que la url que genera esa línea de código se almacena en el campo de ese post en la BD
+            $this->post->image = $this->image->store('public/posts'); //se sube la nueva imagen a la vez que la url que genera esa línea de código se almacena en el campo de ese post en la BD
         }
 
         $this->post->save(); //Como estan enlazados sus atributos a los elementos HTML el valor que haya quedado en estos se actualizará en esos atributos
@@ -1172,7 +1172,124 @@ edit-post.blade.php:
 Por ahora yo lo hice así directo
 
 EditPost.php:
+<?php
 
+namespace App\Livewire;
+
+use App\Models\Post;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+
+class EditPost extends Component
+{
+    use WithFileUploads;
+
+    public $open = false; //Para mostrar/ocultar modal
+    public $id, $title, $content, $imagePost; //Atributos que contendrán los valores del post que se reciba. Aplicando el concepto de "desestructuración"
+    public $image; //esta variable será en la que se almacene el valor de la nueva imagen seleccionada, ya que en $imagePost estará la que ya había en el post si es el caso. Se tuvieron que crear dos "para lo mismo" para diferenciar una de otra en las condicionales tanto del front como del back donde se pregunta si el usuario selecciono otra imagen
+
+    protected $rules = [
+        'title' => 'required',
+        'content' => 'required',
+    ];
+
+    public function mount(Post $post){
+        $this->id = $post->id;
+        $this->title = $post->title;
+        $this->content = $post->content;
+        $this->imagePost = $post->image;
+    }
+
+    public function save(){
+        $this->validate();
+
+        $post = Post::findOrFail($this->id);
+
+        //Si se vuelve a seleccionar otra imagen al editar el post, se debe eliminar la imagen que había en ese post, luego subir la nueva y actualizar la url que se tenía en BD con la url de la nueva imagen
+        if($this->image){ //se pregunta si se le dió valor al campo imagen (significa que se seleccionó algo en el input file)
+            Storage::delete($this->imagePost); //se borra del storage la imagen que había
+            $this->imagePost = $this->image->store('public/posts'); //se sube la nueva imagen a la vez que la url que genera esa línea de código será ahora el nuevo valor en el atributo "imagePost"
+        }
+
+        $post->update([
+            'title' => $this->title,
+            'content' => $this->content,
+            'image' => $this->imagePost //Se guarda en campo "image" del registro de la BD ya sea el valor (ruta) que se tenía desde antes (si no se selecciono ninguna imagen nueva) o el nuevo valor (ruta) de la nueva imagen si es que se selecciono otra, según sea el caso
+        ]);
+
+        $this->reset(['open', 'image']);
+
+        $this->dispatch('render')->to(ShowPosts::class); 
+        $this->dispatch('alert', message: 'El post se actualizó satisfactoriamente');
+    }
+
+    public function render()
+    {
+        return view('livewire.edit-post');
+    }
+}
 
 
 edit-post.blade.php:
+<div>
+    <a class="btn btn-green" wire:click="$set('open', true)">
+        <i class="fa fa-pencil-square"></i>
+    </a>
+
+    <x-dialog-modal wire:model.live="open">
+        <x-slot name="title">
+            Editar el post {{$title}} {{$id}}
+        </x-slot>
+
+        <x-slot name="content">
+
+            <div wire:loading wire:target="image" class='mb-4'> 
+                <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+                    <p class="font-bold">Imagen cargando</p>
+                    <p class="text-sm">Espere un momento hasta que la imagen se haya procesado</p>
+                </div>
+            </div>
+
+            <!--vista previa de imagen seleccionada-->
+            @if ($image)
+                <img class="mb-4" src="{{$image->temporaryUrl()}}">
+            @else
+                <img src="{{Storage::url($imagePost)}}" alt="" >
+            @endif
+
+            <div class="mb-4">
+                <x-label value="Título del post" />
+                <x-input wire:model.live="title" type="text" class="w-full" />
+            </div>
+
+            <div>
+                <x-label value="Contenido del post" />
+                <textarea wire:model.live="content" rows="6" class="form-control w-full"></textarea>
+            </div>
+
+            <div>
+                <input type="file" wire:model.live="image" />
+                <x-input-error for="image" />
+            </div>
+
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$set('open', false)">
+                Cancelar
+            </x-secondary-button>
+
+            <!--Si bien se le coloco el wire:loading con " .attr="diabled" " para que se desactivara mientras e hace el proceso de actualización, ya no se le coloco el "wire:target" (como en create-post.blade.php) ya que al finalizar luego luego se cierra el modal y sale la alerta entonces ya no tiene mucho caso ponerle eso que lo que haría es volverlo a activar una vez finalizado el proceso-->
+            <x-danger-button wire:click="save" wire:loading.attr="disabled" class="disabled:opacity-25">
+                Actualizar
+            </x-danger-button>
+        </x-slot>
+    </x-dialog-modal>
+</div>
+
+
+
+
+
+-
