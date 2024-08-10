@@ -7,10 +7,12 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use App\Models\Post;
 use Livewire\WithFileUploads; //Necesario para parte editar. Para subir poder subir archivos, en este caso si se actualiza la imagen del post desde el modal para editar
+use Livewire\WithPagination;
 
 class ShowPosts extends Component
 {
     use WithFileUploads;
+    use WithPagination;
 
     public $search;
 
@@ -37,7 +39,7 @@ class ShowPosts extends Component
         $posts = Post::where('title', 'like', '%' . $this->search . '%')
                     ->orWhere('content', 'like', '%' . $this->search . '%')
                     ->orderBy($this->sort, $this->direction)
-                    ->get();
+                    ->paginate(10);
 
         return view('livewire.show-posts', compact('posts'))
                 ->layout('layouts.app');

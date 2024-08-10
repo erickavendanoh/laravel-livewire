@@ -1569,3 +1569,39 @@ class ShowPosts extends Component
     
 </div>
 "
+
+
+
+
+
+Paginación.
+Básicamente es cargar y mostrar solo cierta cantidad de registros a la vez, en lugar de todos.
+
+Simplemente agregando estas líneas...
+-en ShowPosts.php en lugar del último "->get();" en $posts dentro de render(), se reemplaza con "->paginate(10);"
+-en show-posts.blade.php: antes de donde termina la tabla ("</x-table>") se añade:
+"
+<div class="px-6 py-3">
+                {{$posts->links()}}
+            </div>
+"
+Y con eso ya se genera la páginación, en este caso de 10 en 10, junto con la barra que contiene el número de cada página y las flechas para ir navegando en ellas.
+
+
+Aunque hay un detalle, si se deja así cada que se cambia de página se recarga la página. Para que no se recargue la página cada que esto ocurra, ósea volver la paginación "dinámica":
+solo es agregar en "ShowPosts.php" las líneas "use Livewire\WithPagination;" (en los imports) y dentro de "class ShowPosts extends Component{}" al principio "use WithPagination;" y listo.
+
+
+Ahora, para que cuando se haga una búsqueda y se traigan ya pocos registros, coincidentes con la búsqueda, por lo que no se requiera ya de paginación, y cuando eso suceda ya no se muestre la barra de paginación con las páginas:
+en "show-posts.blade.php" agregar la validación:
+"
+@if($posts->hasPages())
+                <div class="px-6 py-3">
+                    {{$posts->links()}}
+                </div>
+            @endif
+"
+donde básicamente se válida que si $posts tiene más páginas, ósea que con base a los registros que contenga con base a la consulta de Eloquent y lo que se definio en el "->paginate()" requiera de paginación si se muestre la barra, pero en el caso de que no tenga ya tantos registros (recordar que con la búsqueda ya solo contendría los coincidentes, que a veces no son ya muchos o incluso ya solo uno) ya no se muestra.
+
+
+Ahora también hay un detalle, y es que si se hace una búsqueda de algún registro mientras se está en otra "página" (ósea que la url ya tenga lo de "...?page=6", por ejemplo) no se mostrará nada. Pero si quitamos eso de la url y hacemos la búsqueda nuevamente si encontrará el rgistro. Este problema se solucionaría borrando la información de la "página" de la url (ósea que la url ya tenga lo de "...?page=6", por ejemplo) cuando se busque algo...
