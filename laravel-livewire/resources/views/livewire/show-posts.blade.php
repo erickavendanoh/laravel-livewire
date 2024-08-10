@@ -95,7 +95,10 @@
                                 </p>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <livewire:edit-post :$post :key="$post->id" />
+                                {{-- <livewire:edit-post :$post :key="$post->id" /> --}}
+                                <a class="btn btn-green" wire:click="">
+                                    <i class="fa fa-pencil-square"></i>
+                                </a>
                             </td>
                         </tr>
                     @endforeach

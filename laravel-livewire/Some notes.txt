@@ -1292,4 +1292,6 @@ edit-post.blade.php:
 
 
 
--
+Hasta el momento se tenían tres componentes, el "principal" que es "ShowPost" que dentro tiene otros dos componentes "CreatePost" y "EditPost". Aunuqe no es necesario tene un componente por cada parte u operación, en este caso estos se crearon para fines demostrativos, el de "CreatePost" para ver la parte de comunicación entre componentes empleando eventos, y el de "EditPost" para ver lo correspondiente a componentes de anidamiento.
+Sin embargo, el emplear el componente "EditPost" como componente de anidamiento no es muy óptimo, ya que se carga lo correspondiente a su back y a su front (el modal en este caso con los respectivos datos) por cada uno de los posts, por lo que cuando ya son o llegaran a ser demasiados esto realentizará mucho la página, y de hecho es muy poco probable que el usuario emplee todos y cada uno de ellos, si acaso solo se´ria uno o dos, o cantidades muy pequeñas. Por esta razón lo que estaba contenido aparte en cuanto al componente "EditPost" ahora se incluirá dentro de "ShowPost" para que así ya se tenga un solo modal y lo correspondiente a la lógica dentro de un mismo componente, y ya solo cambie la información contenida, esto empleando el concepto de "parámetros de acción", donde básicamente es que dentro del foreach que recorre los elementos se haga referencia al mismo método pero donde el parámetro que recibe tenga el valor dinámico, es decir que cambie con respecto a que registro se seleccione, y con base a ese llenar la información correspondiente.
+
