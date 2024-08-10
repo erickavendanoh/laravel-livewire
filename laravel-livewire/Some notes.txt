@@ -422,7 +422,7 @@ Por ejemplo, se empleo este diseño de tabla sacado de esa página:
 			</div>
 		</div>
 	</div>
-Y para no tener todos esos <div> dentro del front del componente de Livewire "ShowPost", los <div> dentro de los que está el <table> se pusieron en un componente de blade (anónimo, ósea creado directamente como archivo dentro de resources/views/components), llamado "table.blade.php" y donde originalmente iría la tabla ahora correspondería a su $slot, quedando así:
+Y para no tener todos esos <div> dentro del front del componente de Livewire "ShowPosts", los <div> dentro de los que está el <table> se pusieron en un componente de blade (anónimo, ósea creado directamente como archivo dentro de resources/views/components), llamado "table.blade.php" y donde originalmente iría la tabla ahora correspondería a su $slot, quedando así:
 <div class="bg-white p-8 rounded-md w-full">
     <div class=" flex items-center justify-between pb-6">
         <div>
@@ -827,7 +827,7 @@ El parámetro "event" será el que contendrá la información enviada desde el e
 
 Si se quiere que un evento de un componente lo escuche solo otro componente en específico y ya no todos los demás componentes que puedan estar involucrados, se puede especificar con "dispatch('*nombre del evento*')->to(*nombre del componente*::class)". Por ejemplo (en método save() en CreatePost.php): " $this->dispatch('render')->to(ShowPosts::class); "
 
-Cuando el evento que se esucha y el método propio en el componente que lo hace que se va a ejecutar se llaman igual solo se puede poner una vez y Livewire entenderá. Por ejemplo en ShowPost.php: " protected $listeners = ['render']; " quedó así. Donde antes estaba: " protected $listeners = ['render' => 'render']; ", de las dos formas se indica lo mismo, está escuchando el evento "render" de otro componente (en este caso sbaemos que del de CreatePost) y cuando este se emita (con dispatch()) se ejecutará su método propio "render()"
+Cuando el evento que se esucha y el método propio en el componente que lo hace que se va a ejecutar se llaman igual solo se puede poner una vez y Livewire entenderá. Por ejemplo en ShowPosts.php: " protected $listeners = ['render']; " quedó así. Donde antes estaba: " protected $listeners = ['render' => 'render']; ", de las dos formas se indica lo mismo, está escuchando el evento "render" de otro componente (en este caso sbaemos que del de CreatePost) y cuando este se emita (con dispatch()) se ejecutará su método propio "render()"
 
 
 
@@ -1292,6 +1292,280 @@ edit-post.blade.php:
 
 
 
-Hasta el momento se tenían tres componentes, el "principal" que es "ShowPost" que dentro tiene otros dos componentes "CreatePost" y "EditPost". Aunuqe no es necesario tene un componente por cada parte u operación, en este caso estos se crearon para fines demostrativos, el de "CreatePost" para ver la parte de comunicación entre componentes empleando eventos, y el de "EditPost" para ver lo correspondiente a componentes de anidamiento.
-Sin embargo, el emplear el componente "EditPost" como componente de anidamiento no es muy óptimo, ya que se carga lo correspondiente a su back y a su front (el modal en este caso con los respectivos datos) por cada uno de los posts, por lo que cuando ya son o llegaran a ser demasiados esto realentizará mucho la página, y de hecho es muy poco probable que el usuario emplee todos y cada uno de ellos, si acaso solo se´ria uno o dos, o cantidades muy pequeñas. Por esta razón lo que estaba contenido aparte en cuanto al componente "EditPost" ahora se incluirá dentro de "ShowPost" para que así ya se tenga un solo modal y lo correspondiente a la lógica dentro de un mismo componente, y ya solo cambie la información contenida, esto empleando el concepto de "parámetros de acción", donde básicamente es que dentro del foreach que recorre los elementos se haga referencia al mismo método pero donde el parámetro que recibe tenga el valor dinámico, es decir que cambie con respecto a que registro se seleccione, y con base a ese llenar la información correspondiente.
+Hasta el momento se tenían tres componentes, el "principal" que es "ShowPosts" que dentro tiene otros dos componentes "CreatePost" y "EditPost". Aunque no es necesario tener un componente por cada parte u operación, en este caso estos se crearon para fines demostrativos, el de "CreatePost" para ver la parte de comunicación entre componentes empleando eventos, y el de "EditPost" para ver lo correspondiente a componentes de anidamiento.
+Sin embargo, el emplear el componente "EditPost" como componente de anidamiento no es muy óptimo, ya que se carga lo correspondiente a su back y a su front (el modal en este caso con los respectivos datos) por cada uno de los posts, por lo que cuando ya son o llegaran a ser demasiados esto realentizará mucho la página, y de hecho es muy poco probable que el usuario emplee todos y cada uno de ellos, si acaso solo sería uno o dos, o cantidades muy pequeñas. Por esta razón lo que estaba contenido aparte en cuanto al componente "EditPost" ahora se incluirá dentro de "ShowPosts" para que así ya se tenga un solo modal y lo correspondiente a la lógica dentro de un mismo componente, y ya solo cambie la información contenida, esto empleando el concepto de "parámetros de acción", donde básicamente es que dentro del foreach que recorre los elementos se haga referencia al mismo método pero donde el parámetro que recibe tenga el valor dinámico, es decir que cambie con respecto a que registro se seleccione, y con base a ese llenar la información correspondiente.
+*Lo relacionado a la parte del componente CreatePost si bien también se puede incluir dentro del mismo componente ShowPosts, también se puede dejar aparte ya que no representa ningún problema en la optimización de la página, ya que solo carga una vez y no por cada registro como era en el caso de EditPost, por lo que "no genera código de más".
 
+En este caso la función que se estaría ejecutando cada que se da clic sobre el botón para editar es la de edit() contenida en ShowPosts.php, y que estaría recibiendo como valor cada post por cada recorrido dentro del foreach.
+
+
+Lo resultante tanto en el back como en el front de ShowPosts fue:
+
+-ShowPosts.php: 
+"
+<?php
+
+namespace App\Livewire;
+
+use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+use App\Models\Post;
+use Livewire\WithFileUploads; //Necesario para parte editar. Para subir poder subir archivos, en este caso si se actualiza la imagen del post desde el modal para editar
+
+class ShowPosts extends Component
+{
+    use WithFileUploads;
+
+    public $search;
+
+    public $id, $title, $content, $imagePost; //Para parte de editar. Atributos que contendrán los valores del post que se reciba. Aplicando el concepto de "desestructuración"
+
+    public $image; //Para parte de editar. Esta variable será en la que se almacene el valor de la nueva imagen seleccionada, ya que en $imagePost estará la que ya había en el post si es el caso. Se tuvieron que crear dos "para lo mismo" para diferenciar una de otra en las condicionales tanto del front como del back donde se pregunta si el usuario selecciono otra imagen
+
+    public $sort = 'id';
+    public $direction = 'desc';
+
+    public $open_edit = false; //Atributo con el que se controlará mostrar/ocultar el modal para editar
+
+    // protected $listeners = ['render' => 'render']; //Arreglo que contendrá los eventos que este componente va a "oir" de otro componente con la función propia correspondiente que ejecutará cuando lo haga
+    protected $listeners = ['render']; //Lo mismo que el de arriba pero de forma abreviada, ya que cuando el evento que se esucha y el método propio que se va a ejecutar se llaman igual solo se puede poner una vez y Livewire entenderá
+
+    //Para el modal de editar
+    protected $rules = [
+        'title' => 'required',
+        'content' => 'required',
+    ];
+
+    public function render()
+    {
+        $posts = Post::where('title', 'like', '%' . $this->search . '%')
+                    ->orWhere('content', 'like', '%' . $this->search . '%')
+                    ->orderBy($this->sort, $this->direction)
+                    ->get();
+
+        return view('livewire.show-posts', compact('posts'))
+                ->layout('layouts.app');
+    }
+
+    public function order($sort){
+
+        if($this->sort == $sort){
+            if($this->direction == 'desc'){
+                $this->direction = 'asc';
+            }else{
+                $this->direction = 'desc';
+            }
+        }else{
+            $this->sort = $sort;
+            $this->direction = 'asc';
+        }
+    }
+
+    //Para parte de editar. Con este método se recupera la información del post seleccionado y se abre el modal que muestra dicha información para poder editarla. Y ya con la función update() ahí ya se hace la actualización como tal en la BD y Storage
+    public function edit(Post $post) //Se indica que el parámetro que recibe se trata de una instancia del modelo Post
+    {
+        $this->open_edit = true; //Para que se abra el modal de editar
+        $this->id = $post->id;
+        $this->title = $post->title;
+        $this->content = $post->content;
+        $this->imagePost = $post->image;
+    }
+
+    public function update()
+    {
+        $this->validate();
+
+        $post = Post::findOrFail($this->id);
+
+        //Si se vuelve a seleccionar otra imagen al editar el post, se debe eliminar la imagen que había en ese post, luego subir la nueva y actualizar la url que se tenía en BD con la url de la nueva imagen
+        if($this->image){ //se pregunta si se le dió valor al campo imagen (significa que se seleccionó algo en el input file)
+            Storage::delete($this->imagePost); //se borra del storage la imagen que había
+            $this->imagePost = $this->image->store('public/posts'); //se sube la nueva imagen a la vez que la url que genera esa línea de código será ahora el nuevo valor en el atributo "imagePost"
+        }
+
+        $post->update([
+            'title' => $this->title,
+            'content' => $this->content,
+            'image' => $this->imagePost //Se guarda en campo "image" del registro de la BD ya sea el valor (ruta) que se tenía desde antes (si no se selecciono ninguna imagen nueva) o el nuevo valor (ruta) de la nueva imagen si es que se selecciono otra, según sea el caso
+        ]);
+
+        $this->reset(['open_edit', 'image']);
+
+        // $this->dispatch('render')->to(ShowPosts::class); //Ya no es necesario emitir el evento, como se hacía cuando todo esto se hacía en otro componente (EditPost), porque ya se está realizando la acción sobre este mismo componente
+        $this->dispatch('alert', message: 'El post se actualizó satisfactoriamente');
+    }
+}
+"
+
+-show-posts.blade.php:
+"
+<div>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Dashboard') }}
+        </h2>
+    </x-slot>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <x-table>
+
+            <div class="px-6 py-4 flex items-center">
+                {{-- <input type="text" wire:model.live="search"> --}}
+                <x-input type="text" class="flex-1 mr-4" placeholder="Escriba que quiere buscar" wire:model.live="search" />  <!--Componente de blade de los ya incluidos con Jetstream-->
+            
+                <livewire:create-post />
+            </div>
+
+            @if($posts->count()) {{--Se valida si existen "posts" por mostrar. Ósea que desde un inicio venga la variable con $posts con información, o que si se hayan encontrado coincidencias al momento de ir buscando--}}
+
+            <table class="min-w-full leading-normal">
+                <thead>
+                    <tr>
+                        <th
+                            class="w-24 cursor-pointer px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                            wire:click="order('id')">
+                            ID
+
+                            {{-- Sort --}}
+                            @if ($sort=='id')
+
+                                @if ($direction == 'asc')
+                                    <i class="fa fa-sort-alpha-asc float-right mt-1" aria-hidden="true"></i>
+                                @else
+                                    <i class="fa fa-sort-alpha-desc float-right mt-1" aria-hidden="true"></i>
+                                @endif
+
+                            @else
+                                <i class="fa fa-sort float-right mt-1" aria-hidden="true"></i>
+                            @endif
+                        </th>
+                        <th
+                            class="cursor-pointer px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                            wire:click="order('title')">
+                            TITLE
+
+                            {{-- Sort --}}
+                            @if ($sort=='title')
+
+                                @if ($direction == 'asc')
+                                    <i class="fa fa-sort-alpha-asc float-right mt-1" aria-hidden="true"></i>
+                                @else
+                                    <i class="fa fa-sort-alpha-desc float-right mt-1" aria-hidden="true"></i>
+                                @endif
+
+                            @else
+                                <i class="fa fa-sort float-right mt-1" aria-hidden="true"></i>
+                            @endif
+
+                        </th>
+                        <th
+                            class="cursor-pointer px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                            wire:click="order('content')">
+                            CONTENT
+
+                            {{-- Sort --}}
+                            @if ($sort=='content')
+
+                                @if ($direction == 'asc')
+                                    <i class="fa fa-sort-alpha-asc float-right mt-1" aria-hidden="true"></i>
+                                @else
+                                    <i class="fa fa-sort-alpha-desc float-right mt-1" aria-hidden="true"></i>
+                                @endif
+
+                            @else
+                                <i class="fa fa-sort float-right mt-1" aria-hidden="true"></i>
+                            @endif
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($posts as $post)
+                        <tr>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                <p class="text-gray-900 whitespace-no-wrap">{{$post->id}}</p>
+                            </td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                <p class="text-gray-900 whitespace-no-wrap">
+                                    {{$post->title}}
+                                </p>
+                            </td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                <p class="text-gray-900 whitespace-no-wrap">
+                                    {{$post->content}}
+                                </p>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                {{-- <livewire:edit-post :$post :key="$post->id" /> --}}
+                                <a class="btn btn-green" wire:click="edit({{$post}})">
+                                    <i class="fa fa-pencil-square"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            @else
+                <div class="px-6 py-4">
+                    No existe ningún registro coincidente
+                </div>
+            @endif
+
+        </x-table>
+
+
+        <x-dialog-modal wire:model.live="open_edit">
+            <x-slot name="title">
+                Editar el post {{$title}} {{$id}}
+            </x-slot>
+
+            <x-slot name="content">
+
+                <div wire:loading wire:target="image" class='mb-4'> 
+                    <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+                        <p class="font-bold">Imagen cargando</p>
+                        <p class="text-sm">Espere un momento hasta que la imagen se haya procesado</p>
+                    </div>
+                </div>
+
+                <!--vista previa de imagen seleccionada-->
+                @if ($image)
+                    <img class="mb-4" src="{{$image->temporaryUrl()}}">
+                @else
+                    <img src="{{Storage::url($imagePost)}}" alt="" >
+                @endif
+
+                <div class="mb-4">
+                    <x-label value="Título del post" />
+                    <x-input wire:model.live="title" type="text" class="w-full" />
+                </div>
+
+                <div>
+                    <x-label value="Contenido del post" />
+                    <textarea wire:model.live="content" rows="6" class="form-control w-full"></textarea>
+                </div>
+
+                <div>
+                    <input type="file" wire:model.live="image" />
+                    <x-input-error for="image" />
+                </div>
+
+            </x-slot>
+
+            <x-slot name="footer">
+                <x-secondary-button wire:click="$set('open_edit', false)">
+                    Cancelar
+                </x-secondary-button>
+
+                <!--Si bien se le coloco el wire:loading con " .attr="diabled" " para que se desactivara mientras se hace el proceso de actualización, ya no se le coloco el "wire:target" (como en create-post.blade.php) ya que al finalizar luego luego se cierra el modal y sale la alerta entonces ya no tiene mucho caso ponerle eso que lo que haría es volverlo a activar una vez finalizado el proceso-->
+                <x-danger-button wire:click="update" wire:loading.attr="disabled" class="disabled:opacity-25">
+                    Actualizar
+                </x-danger-button>
+            </x-slot>
+        </x-dialog-modal>
+    </div>
+    
+</div>
+"
