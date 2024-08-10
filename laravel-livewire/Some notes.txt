@@ -1604,4 +1604,21 @@ en "show-posts.blade.php" agregar la validación:
 donde básicamente se válida que si $posts tiene más páginas, ósea que con base a los registros que contenga con base a la consulta de Eloquent y lo que se definio en el "->paginate()" requiera de paginación si se muestre la barra, pero en el caso de que no tenga ya tantos registros (recordar que con la búsqueda ya solo contendría los coincidentes, que a veces no son ya muchos o incluso ya solo uno) ya no se muestra.
 
 
-Ahora también hay un detalle, y es que si se hace una búsqueda de algún registro mientras se está en otra "página" (ósea que la url ya tenga lo de "...?page=6", por ejemplo) no se mostrará nada. Pero si quitamos eso de la url y hacemos la búsqueda nuevamente si encontrará el rgistro. Este problema se solucionaría borrando la información de la "página" de la url (ósea que la url ya tenga lo de "...?page=6", por ejemplo) cuando se busque algo...
+Ahora también hay un detalle, y es que si se hace una búsqueda de algún registro mientras se está en otra "página" (ósea que la url ya tenga lo de "...?page=6", por ejemplo) no se mostrará nada. Pero si quitamos eso de la url y hacemos la búsqueda nuevamente si encontrará el registro. Este problema se solucionaría borrando la información de la "página" de la url (ósea lo de "...?page=6", por ejemplo) cuando se busque algo...
+*Para esto se empleará el tema de "Ciclos de vida de Livewire", donde se logra que se ejecuten distintos métodos a lo largo del ciclo de vida de un componente. Ejemplos de estos métodos son mount() el cual se ejecuta cuando se instancia el componente, es el primero que se ejecuta cuando se carga el componente. O updating() el cual se ejecuta cuando se modifica el valor de alguna propiedad/atributo del componente.
+Para este caso se empleará un método del ciclo de vida llamado "updatingFoo" (no viene en documentación de Livewire 3.0, pero se hizo igual que en video del curso y si funcionó aún así) donde "Foo" vendría a ser reemplazado por el nombre de la propiedad/atributo del componente, donde en el momento cada vez que se vaya modificando su valor se irá ejecutando lo que haya dentro. En este caso ya lo único que se tuvo que agregar en ShowPosts.php fue:
+"
+public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+"
+donde básicamente ese método se irá ejecutando cada que se vaya modificando la propiedad/atributo $search del componente, que está directamente relacionado con el <input> de búsqueda (ya tan solo con ese nombre Livewire asocia ese método con que se ejecute cada vez que se modifique la propiedad/atributo $search).
+Y lo que está dentro es un método que sirve para resetear el número de página de vuelta a la 1 (quitando también lo de "...?page=*"), con el cual precisamente como indica la documentación (https://livewire.laravel.com/docs/pagination en apartado "Resetting the page") sirve precisamente en casos donde se filtra o se hace una búsqueda en la colección dentro del componente y que no haya ese detalle de que no se encuentre el registro porqué se está en una página distinta a la 1.
+
+Y con eso queda solucionado el problema.
+
+
+
+
+

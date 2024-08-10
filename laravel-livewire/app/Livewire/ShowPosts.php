@@ -45,6 +45,11 @@ class ShowPosts extends Component
                 ->layout('layouts.app');
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
     public function order($sort){
 
         if($this->sort == $sort){
