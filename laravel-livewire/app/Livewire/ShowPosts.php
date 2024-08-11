@@ -14,7 +14,7 @@ class ShowPosts extends Component
     use WithFileUploads;
     use WithPagination;
 
-    public $search;
+    public $search=''; //Se inicializó con cadena vacía por tema de Query String, para lo de validación de que no coloque esta propiedad/atributo y su valor en URL cuando tenga este valor con el que se incializa, y que solo lo haga cuando sea distinto, ósea cuanod el usuario si busqué algo, con lo que le dará valor a este atributo
 
     public $id, $title, $content, $imagePost; //Para parte de editar. Atributos que contendrán los valores del post que se reciba. Aplicando el concepto de "desestructuración"
 
@@ -24,6 +24,16 @@ class ShowPosts extends Component
     public $direction = 'desc';
 
     public $open_edit = false; //Atributo con el que se controlará mostrar/ocultar el modal para editar
+
+    public $cant = '10'; //Atributo/propiedad con la que se controlará la cantidad de registros que quiera ver el usuario. Al principio estaba con valor numérico, pero luego se cambió a string por tema de Query String, pero el funcionamiento sigue siendo igual
+
+    //Atributo/propiedad empleado para el concepto de Query String, con el cual se coloca cierta información en la URL. Dentro del arreglo se coloca la información que se quiere incluir en la URL. En este caso ya solo colocando el nombre de los atributos/propiedades del componente ya se colocarán en automático en la URL así como los valores que vayan teniendo. La parte del "=> ['except' => ]" es para que cuando tengan el valor indicado ahí, en este caso los que también son su valores iniciales cuando las declaramos se quiten de la URL, esto para que cuando no tengan un valor distinto al inicial aparezcan en la URL y se vean siempre, lo que visualmente no se ve tan agradable en un momento dado ya que se vuelve muy larga, y que solo aparezcan en la URL cuando tengan un valor distinto al indicado
+    protected $queryString = [
+        'cant' => ['except' => '10'], 
+        'sort' => ['except' => 'id'], 
+        'direction' => ['except' => 'desc'], 
+        'search' => ['except' => '']
+    ];
 
     // protected $listeners = ['render' => 'render']; //Arreglo que contendrá los eventos que este componente va a "oir" de otro componente con la función propia correspondiente que ejecutará cuando lo haga
     protected $listeners = ['render']; //Lo mismo que el de arriba pero de forma abreviada, ya que cuando el evento que se esucha y el método propio que se va a ejecutar se llaman igual solo se puede poner una vez y Livewire entenderá
@@ -39,7 +49,7 @@ class ShowPosts extends Component
         $posts = Post::where('title', 'like', '%' . $this->search . '%')
                     ->orWhere('content', 'like', '%' . $this->search . '%')
                     ->orderBy($this->sort, $this->direction)
-                    ->paginate(10);
+                    ->paginate($this->cant);
 
         return view('livewire.show-posts', compact('posts'))
                 ->layout('layouts.app');

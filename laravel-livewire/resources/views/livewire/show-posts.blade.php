@@ -9,8 +9,20 @@
         <x-table>
 
             <div class="px-6 py-4 flex items-center">
+                <div class="flex items-center"> <!--Con clase "flex" se lográ que todos los elementos dentro de la etiqueta se vayan colocando a lo largo del eje X, ósea horizontalmente. Y con "items-center" se logra que se centren sobre el eje Y, ósea verticalmente-->
+                    <span>Mostrar</span>
+
+                    <select wire:model.live="cant" class="mx-2 form-control">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+
+                    <span>entradas</span>
+                </div>
                 {{-- <input type="text" wire:model.live="search"> --}}
-                <x-input type="text" class="flex-1 mr-4" placeholder="Escriba que quiere buscar" wire:model.live="search" />  <!--Componente de blade de los ya incluidos con Jetstream-->
+                <x-input type="text" class="flex-1 mx-4" placeholder="Escriba que quiere buscar" wire:model.live="search" />  <!--Componente de blade de los ya incluidos con Jetstream-->
             
                 <livewire:create-post />
             </div>

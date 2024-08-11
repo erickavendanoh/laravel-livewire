@@ -1622,3 +1622,50 @@ Y con eso queda solucionado el problema.
 
 
 
+Se le dará la opción al usuario de que decida la cantidad de registros que quiera visualizar, en este caso ya sea 10, 25, 50 o 100:
+-En "show-posts.blade.php" se agrega:
+"
+<div class="flex items-center"> <!--Con clase "flex" se lográ que todos los elementos dentro de la etiqueta se vayan colocando a lo largo del eje X, ósea horizontalmente. Y con "items-center" se logra que se centren sobre el eje Y, ósea verticalmente-->
+                    <span>Mostrar</span>
+
+                    <select wire:model.live="cant" class="mx-2 form-control">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+
+                    <span>entradas</span>
+                </div>
+"
+
+-En "ShowPosts.php":
+"
+public $cant = 10; //Atributo/propiedad con la que se controlará la cantidad de registros que quiera ver el usuario
+"
+Y "->paginate($this->cant);" dentro de $posts dentro de render()
+
+
+Ahora si por ejemplo se quiere compartir la página (la URL) a alguien más para que vea exactamente lo que veíamos, como puede ser la cantidad de resultados que habíamos seleccionado, el orden en base a alguno de los campos y si era ascendente o descendente, así como incluso la búsqueda si es que habíamo hecho alguna, se empleará el concepto de "Query String", donde básicamente se coloca cierta información en la URL, en este caso los atributos/propiedades del componente y el valor que vayan teniendo, para que precisamente cuando se copie y se pegué en otro lado se muestre exactamente lo que se veía cuando se copió la URL, que ya contendría los valores que se tenían en esos atributos/propiedades.
+-En "ShowPosts.php":
+"
+public $search=''; //Se inicializó con cadena vacía por tema de Query String, para lo de validación de que no coloque esta propiedad/atributo y su valor en URL cuando tenga este valor con el que se incializa, y que solo lo haga cuando sea distinto, ósea cuanod el usuario si busqué algo, con lo que le dará valor a este atributo
+"
+"
+public $cant = '10'; //Atributo/propiedad con la que se controlará la cantidad de registros que quiera ver el usuario. Al principio estaba con valor numérico, pero luego se cambió a string por tema de Query String, pero el funcionamiento sigue siendo igual
+"
+"
+//Atributo/propiedad empleado para el concepto de Query String, con el cual se coloca cierta información en la URL. Dentro del arreglo se coloca la información que se quiere incluir en la URL. En este caso ya solo colocando el nombre de los atributos/propiedades del componente ya se colocarán en automático en la URL así como los valores que vayan teniendo. La parte del "=> ['except' => ]" es para que cuando tengan el valor indicado ahí, en este caso los que también son su valores iniciales cuando las declaramos se quiten de la URL, esto para que cuando no tengan un valor distinto al inicial aparezcan en la URL y se vean siempre, lo que visualmente no se ve tan agradable en un momento dado ya que se vuelve muy larga, y que solo aparezcan en la URL cuando tengan un valor distinto al indicado
+    protected $queryString = [
+        'cant' => ['except' => '10'], 
+        'sort' => ['except' => 'id'], 
+        'direction' => ['except' => 'desc'], 
+        'search' => ['except' => '']
+    ];
+"
+
+
+
+
+
+-
