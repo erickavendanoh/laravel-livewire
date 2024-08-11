@@ -1,4 +1,4 @@
-<div>
+<div wire:init="loadPosts">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Dashboard') }}
@@ -27,7 +27,7 @@
                 <livewire:create-post />
             </div>
 
-            @if($posts->count()) {{--Se valida si existen "posts" por mostrar. Ósea que desde un inicio venga la variable con $posts con información, o que si se hayan encontrado coincidencias al momento de ir buscando--}}
+            @if(count($posts)) {{--Se valida si existen "posts" por mostrar. Ósea que desde un inicio venga la variable con $posts con información, o que si se hayan encontrado coincidencias al momento de ir buscando--}}
 
             <table class="min-w-full leading-normal">
                 <thead>
@@ -117,15 +117,15 @@
                 </tbody>
             </table>
 
-            @else
-                <div class="px-6 py-4">
-                    No existe ningún registro coincidente
-                </div>
-            @endif
-
             @if($posts->hasPages())
                 <div class="px-6 py-3">
                     {{$posts->links()}}
+                </div>
+            @endif
+
+            @else
+                <div class="px-6 py-4">
+                    No existe ningún registro coincidente
                 </div>
             @endif
 

@@ -27,6 +27,8 @@ class ShowPosts extends Component
 
     public $cant = '10'; //Atributo/propiedad con la que se controlará la cantidad de registros que quiera ver el usuario. Al principio estaba con valor numérico, pero luego se cambió a string por tema de Query String, pero el funcionamiento sigue siendo igual
 
+    public $readyToLoad = false; //Atributo/propiedad correspondiente a parte de "aplazar carga"
+
     //Atributo/propiedad empleado para el concepto de Query String, con el cual se coloca cierta información en la URL. Dentro del arreglo se coloca la información que se quiere incluir en la URL. En este caso ya solo colocando el nombre de los atributos/propiedades del componente ya se colocarán en automático en la URL así como los valores que vayan teniendo. La parte del "=> ['except' => ]" es para que cuando tengan el valor indicado ahí, en este caso los que también son su valores iniciales cuando las declaramos se quiten de la URL, esto para que cuando no tengan un valor distinto al inicial aparezcan en la URL y se vean siempre, lo que visualmente no se ve tan agradable en un momento dado ya que se vuelve muy larga, y que solo aparezcan en la URL cuando tengan un valor distinto al indicado
     protected $queryString = [
         'cant' => ['except' => '10'], 
@@ -46,10 +48,18 @@ class ShowPosts extends Component
 
     public function render()
     {
-        $posts = Post::where('title', 'like', '%' . $this->search . '%')
+        if($this->readyToLoad){
+            $posts = Post::where('title', 'like', '%' . $this->search . '%')
                     ->orWhere('content', 'like', '%' . $this->search . '%')
                     ->orderBy($this->sort, $this->direction)
                     ->paginate($this->cant);
+        }else{
+            $posts = [];
+        }
+        // $posts = Post::where('title', 'like', '%' . $this->search . '%')
+        //             ->orWhere('content', 'like', '%' . $this->search . '%')
+        //             ->orderBy($this->sort, $this->direction)
+        //             ->paginate($this->cant);
 
         return view('livewire.show-posts', compact('posts'))
                 ->layout('layouts.app');
@@ -58,6 +68,11 @@ class ShowPosts extends Component
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    public function loadPosts()
+    {
+        $this->readyToLoad = true;
     }
 
     public function order($sort){

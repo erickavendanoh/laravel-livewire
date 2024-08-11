@@ -1668,4 +1668,75 @@ public $cant = '10'; //Atributo/propiedad con la que se controlará la cantidad 
 
 
 
+Aplazar carga.
+Prácticamente es el concepto que se suele usar en páginas web donde cuando hay mucha información que cargar o recursos que pueden ser pesados como imágenes, archivos, archivos multimedia, etc. no se tenga que hacer esperar al usuario a que cargue todo para mostrarle la página, sino que en lugar de eso primero se carga la plantilla y donde esté esa información o esos recursos se muestre un spinner o algo que indique que se está cargando la información en ese aparatado correspondiente mientras se hace la consulta a la BD, API, etc. y ya hasta que se tenga esa información o se carguen esos recursos se muestre ahora sí, pero mientras el usuario ya está viendo algo y no solo una página en blanco o que le de la impresión de que no carga nada cuando realmente si se está haciendo algo.
+
+En este caso se aplicará a la tabla donde están contenidos los registros, donde lo que se cargará primero será lo relacionado a la plantilla y todo lo demás, y ya lo correspondiente a los registros (contenido de la tabla, que corresponde a lo que se tenga en $posts) se cargue después y mientras se hace la consulta y se obtiene la información de la BD se muestre algo que indique que se esté cargando (para el caso de este proyecto no es tan necesario esto, ya que los registros en sí son puro texto, al menos lo que se muestra al principio, pero se hará de igual forma para saber como hacerlo). En este caso no será un spinner o algo así como tal, sino que simplemnete será el texto que indicaba que no había registros, el de "No existe ningún registro coincidente", pero en lugar de eso ya después si se podría poner otro mensaje, spinner o animación.
+
+-En "ShowPosts.php":
+"
+public $readyToLoad = false; //Atributo/propiedad correspondiente a parte de "aplazar carga"
+"
+con ese atributo se hará la validación de cuando sea true se muestren los registros ya cargados pero mientras siga siendo false se muestre lo demás y ya después lo relacionado a lo que e estaba cargando, en este caso los registros en $posts
+
+en render():
+"
+if($this->readyToLoad){
+            $posts = Post::where('title', 'like', '%' . $this->search . '%')
+                    ->orWhere('content', 'like', '%' . $this->search . '%')
+                    ->orderBy($this->sort, $this->direction)
+                    ->paginate($this->cant);
+        }else{
+            $posts = [];
+        }
+        // $posts = Post::where('title', 'like', '%' . $this->search . '%')
+        //             ->orWhere('content', 'like', '%' . $this->search . '%')
+        //             ->orderBy($this->sort, $this->direction)
+        //             ->paginate($this->cant);
+"
+se pregunta que cuando la prpiedad/atributo "readyToLoad" sea true se haga la consulta que llena $posts, pero mientras sea false en $posts se tenga un arreglo vacío
+
+se agrega función:
+"
+public function loadPosts()
+    {
+        $this->readyToLoad = true;
+    }
+"
+básicamente esta cuando se ejecute cambia el valor de "readyToLoad" a true
+
+
+-En "show-posts.blade.php":
+"
+<div wire:init="loadPosts">
+"
+se indica que hasta que se cargue el componente se ejecute esa función, en este caso ya que se cargo lo del front que trae la plantilla, el buscador, tabla etc. se ejecuta ese método, que cambia el valor de "readyToLoad" a true, y, como se cambia el valor de una propiedad/atributo del componente recordar que cuandoe sto pasa se ejecuta mount() de nuevo, y como esta vez que se vuelve a ejecutar "readyToLoad" ya es true ahora sí se hace la consulta que llena $posts
+
+"@if(count($posts))"
+Se cambia de como se tenía de "$posts->count()" a "count($posts)" porque si se deja como en la primera como al principio $posts es un arreglo vacío, al menos cuando "readyToLoad" es false, daría error con la primera porque esa solo es para colecciones, pero ya con count() que es nativa de php aplica para colecciones y arreglos.
+
+Lo de
+"
+@if($posts->hasPages())
+                <div class="px-6 py-3">
+                    {{$posts->links()}}
+                </div>
+            @endif
+"
+se cambia a adentro antes de 
+"
+@else
+                <div class="px-6 py-4">
+                    No existe ningún registro coincidente
+                </div>
+            @endif
+
+        </x-table>
+"
+Ya que lo mismo, si se deja afuera cuando $posts es arreglo vacío como ->hasPages() es para colecciones dará error, entonces ya cambiandoo ahí adentro como esa parte aplica cuando $posts ya tiene contenido, ósea que ya es una colección ya no da error
+
+
+
+
+
 -
