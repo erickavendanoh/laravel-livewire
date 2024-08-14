@@ -44,4 +44,9 @@ class CreatePost extends Component
     {
         return view('livewire.create-post');
     }
+
+    //Método para resetear el modal de crear post para que cuando se de clic en "cancelar" o en algún lado fuera y se cierra y se quiera volver a abrir no salga lo que se estaba ingresando anteriormente
+    public function updatingOpen(){
+        $this->reset(['title', 'content', 'image']);
+    }
 }

@@ -1787,4 +1787,26 @@ public function delete(Post $post){
 
 
 
--
+Hay un pequeño detalle, y es que cuando se empiezan a ingresar datos en el modal para crear un post y no se guarda ni nada, sino que ya sea que se de clic a alguna parte fuera del modal o se de clic en "cancelar" y se vuelve a abrir después nuevamente el modal, con opción "CREAR NUEVO POST", lo que se había ingresado anteriormente sigue apareciendo. 
+Para solucionar esto se empleará un "hook", que tiene que ver con el tema de "Ciclos de vida", que tiene que ver con métodos que se ejecutarán en cierto punto del ciclo de vida del componente, en este caso sera un updating...() (el cuál es un método que se ejecuta cada que se actualiza o modifica cierto atributo del componente, que corresponderá al nombre que se ponga después del "updating"), en este caso será la función "updatingOpen" que se ejecutará cada que propiedad/atributo "open" cambie de valor, ósea cada que se abra o cierre el modal.
+*updating...() se ejecuta justo antes de que cambie el valor de la prpiedad/atributo, y updated...() lo hace ya después de que sucede el cambio.
+
+-CreatePost.php:
+"
+//Método para resetear el modal de crear post para que cuando se de clic en "cancelar" o en algún lado fuera y se cierra y se quiera volver a abrir no salga lo que se estaba ingresando anteriormente
+    public function updatingOpen(){
+        $this->reset(['title', 'content', 'image']);
+    }
+"
+
+
+También había otro detalle, y es que salian los errores "Failed to load resource: the server responded with a status of 404 (Not Found)" en la consola. Esto se debía a parte del modal para editar un post dentro de show-posts.blade.php, a las partes de...
+"
+@if ($image)
+                    <img class="mb-4" src="{{$image->temporaryUrl()}}">
+                @else
+                    <img src="{{Storage::url($imagePost)}}" alt="" >
+                @endif
+" 
+donde como se carga todo lo de dentro de show-posts.blade.php al inicio, incluyendo el modal, como no se cumple la primera condición (porque no se ha abierto y subido una imagen) y como va al @else donde pregunta por $imagePost la cual no tiene valor sino hasta que se edita un post entonces no encuentra nada en el storage y manda el <img> vacío ("<img src="" alt="" >"). 
+Eso se soluciona solo cambiendo a en lugar de solo "@else" a "@elseif($imagePost)". Por lo que cuando no se esté editando un post y se abrá todo lo de show-posts.blade.php no se cumple ninguna de las dos y no intenta obtener algo del sotrage. El funcionamiento para editar no se ve afectado.

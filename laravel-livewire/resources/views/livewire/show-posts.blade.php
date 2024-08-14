@@ -154,7 +154,7 @@
                 <!--vista previa de imagen seleccionada-->
                 @if ($image)
                     <img class="mb-4" src="{{$image->temporaryUrl()}}">
-                @else
+                @elseif($imagePost)
                     <img src="{{Storage::url($imagePost)}}" alt="" >
                 @endif
 
