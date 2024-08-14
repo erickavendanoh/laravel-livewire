@@ -1739,4 +1739,6 @@ Ya que lo mismo, si se deja afuera cuando $posts es arreglo vacío como ->hasPag
 
 
 
--
+Se mostró como integrar CKEditor 5, el cual es un plugin para poder integrar un editor de texto en aplicaciones web (permite darle formato al texto como negritas, subrayado, etc.). Sin embargo como el curso ya llevaba algo de tiempo a cuando se tomó la documentación, forma de implementarlo, etc. cambió.
+Se mostró como implementarlo y como resolver un detalle de que cada que se falla la validación al querer guardar un post (en este caso se implemento para parte de cuando se crea un post, componente CreatePost, y en la parte de editar, dentor de ShowPosts, para el textarea de "content") se borraba el formato de CKEditor, y como lo soluciono modificando el código de debajpo que venía en documentación, etc.
+Aunque eso es más como parte visual para el usuario, y una funcionalidad "extra". Yo no lo implementé debido a que de la forma que se mostró en curso ya no funcionaba para mis versiones de las tecnologías, y para njo atrasarme no lo intente implementar ya. Sin embargo no afecta en nada al funcionamiento
