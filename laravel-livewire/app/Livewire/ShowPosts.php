@@ -38,7 +38,7 @@ class ShowPosts extends Component
     ];
 
     // protected $listeners = ['render' => 'render']; //Arreglo que contendrá los eventos que este componente va a "oir" de otro componente con la función propia correspondiente que ejecutará cuando lo haga
-    protected $listeners = ['render']; //Lo mismo que el de arriba pero de forma abreviada, ya que cuando el evento que se esucha y el método propio que se va a ejecutar se llaman igual solo se puede poner una vez y Livewire entenderá
+    protected $listeners = ['render', 'delete']; //Lo mismo que el de arriba pero de forma abreviada, ya que cuando el evento que se esucha y el método propio que se va a ejecutar se llaman igual solo se puede poner una vez y Livewire entenderá
 
     //Para el modal de editar
     protected $rules = [
@@ -121,5 +121,11 @@ class ShowPosts extends Component
 
         // $this->dispatch('render')->to(ShowPosts::class); //Ya no es necesario emitir el evento, como se hacía cuando todo esto se hacía en otro componente (EditPost), porque ya se está realizando la acción sobre este mismo componente
         $this->dispatch('alert', message: 'El post se actualizó satisfactoriamente');
+    }
+
+    public function delete(Post $post){
+        $id = $post->id;
+        $post = Post::findOrFail($id);
+        $post->delete();
     }
 }

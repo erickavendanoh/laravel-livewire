@@ -106,10 +106,15 @@
                                     {{$post->content}}
                                 </p>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex">
                                 {{-- <livewire:edit-post :$post :key="$post->id" /> --}}
                                 <a class="btn btn-green" wire:click="edit({{$post}})">
                                     <i class="fa fa-pencil-square"></i>
+                                </a>
+
+                                <!--"ml-2" es para un margin left de 2px-->
+                                <a class="btn btn-red ml-2" wire:click="$dispatch('deletePost', { post: {{ $post }} })"> <!--Se emite un evento llamdo "deletePost" a partir de cuando se desencadena el evento "click" ("wire:click"), y se manda el post en cuestión, este evento se escucha abajo en la parte correspondiente al stack "js" (lo contenido dentro de los push), y muestra la alerta, la cual cuando se confirme emite otro evento que vuelve a mandar la misma información del post a la función que se ejecuta cuando se escucha en ShowPosts.php y que hace lo correspondiente, en este caso eliminar el post -->
+                                    <i class="fa fa-trash"></i>
                                 </a>
                             </td>
                         </tr>
@@ -182,5 +187,41 @@
             </x-slot>
         </x-dialog-modal>
     </div>
+
+    @push('js')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        @script
+            <script>
+                $wire.on('deletePost', (post) => {
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: "You won't be able to revert this!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, delete it!"
+                        // Esta parte corresponde a cuando confirman
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+
+                            //Se emite un evento llamado "delete", y en este caso como es hacia el mismo componente se emplea dispatchSelf
+                            //se pasa como parámetro "post" el cuál ya tendrá el post en cuestión ya que se le mandó dentro de evento "deletePost" cuando se cliqueó en botón para eliminar un post
+                            //luego ya dentro de ShowPosts se escucha ese evento, y se define el método que se ejecutará cuando eso pase y el cuál empleará el valor que se está pasando desde la emisión de este evento
+                            $wire.dispatchSelf('delete', { post });
+
+                            Swal.fire({
+                            title: "Deleted!",
+                            text: "Your file has been deleted.",
+                            icon: "success"
+                            });
+                        }
+                    });
+                });
+            </script>
+        @endscript
+
+    @endpush
     
 </div>

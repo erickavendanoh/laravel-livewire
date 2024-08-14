@@ -44,6 +44,7 @@
 
         @livewireScripts
 
+        @stack('js')
 
         <script>
             window.addEventListener('alert', function(event){

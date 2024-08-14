@@ -1742,3 +1742,49 @@ Ya que lo mismo, si se deja afuera cuando $posts es arreglo vacío como ->hasPag
 Se mostró como integrar CKEditor 5, el cual es un plugin para poder integrar un editor de texto en aplicaciones web (permite darle formato al texto como negritas, subrayado, etc.). Sin embargo como el curso ya llevaba algo de tiempo a cuando se tomó la documentación, forma de implementarlo, etc. cambió.
 Se mostró como implementarlo y como resolver un detalle de que cada que se falla la validación al querer guardar un post (en este caso se implemento para parte de cuando se crea un post, componente CreatePost, y en la parte de editar, dentor de ShowPosts, para el textarea de "content") se borraba el formato de CKEditor, y como lo soluciono modificando el código de debajpo que venía en documentación, etc.
 Aunque eso es más como parte visual para el usuario, y una funcionalidad "extra". Yo no lo implementé debido a que de la forma que se mostró en curso ya no funcionaba para mis versiones de las tecnologías, y para njo atrasarme no lo intente implementar ya. Sin embargo no afecta en nada al funcionamiento
+
+
+
+
+
+Se agregará un botón para eliminar un registro. Y que salga una alerta de confirmación (con SweetAlert2).
+
+Se incluye en app.blade.php: "@stack('js')". Básicamente @stack y @push son parecidas a lo que hacen @yield y @section. @stack y @push son directivas de blade que se emplean para gestionar secciones de contenido que se definen en una parte de una vista (generalmente una vista principal o plantilla, usando ahí @stack('*nombre del stack*')) para que luego en las otras vistas que extiendan de esa se especifique en esa parte (usando "@push('*nombre del stack*')" "@endpush") lo que se va a renderizar en ese apartado.
+*Igual está la directiva de blade @include. Esta no se ha empleado al momento, pero esta básicamnete lo que hace es que se pone en una vista principal o plantilla el contenido correspondiente a otra vista en la parte de la vista principal o plantilla donde se coloca el @include('*archivo con vista a incvorporar*').
+
+En este caso, las vistas que empleen app.blade.php (que tengan "<x-app-layout>", ya que está en resources/views/layouts) donde se quiera agregar contenido que se quiera renderizar en la pila (@stack) "js" este se coloca dentro de "@push('*nombre del stack*')" "@endpush"
+
+
+Se puede desencadenar un evento tras otro evento. En este caso en el evento "click" ("wire:click") (generalmente lo que se hace es solamente asociar directamente un evento con alguna función que se quiera ejecutar tras desencadenarlo) del botón para eliminar se desencadenará otro evento llamdo "deletePost", el cual a su vez llevará un valor como parámetro que corresponderá al post en cuestión. Cuando se escuche este método, en la parte del stack de "js" de la vista ShowPosts.blade.php se mostrará la alerta de confirmación en la cual si se confirma se emite otro evento el cual mandará de nuevo el post ahora a una función que se ejecuta en ShowPosts.php cuando se escucha ese evento, en la cual se elimina el post.
+
+-app.blade.php: 
+"
+@stack('js')
+"
+
+-show-posts.blade.php:
+"
+<!--"ml-2" es para un margin left de 2px-->
+                                <a class="btn btn-red ml-2" wire:click="$dispatch('deletePost', { post: {{ $post }} })"> <!--Se emite un evento llamdo "deletePost" a partir de cuando se desencadena el evento "click" ("wire:click"), y se manda el post en cuestión, este evento se escucha abajo en la parte correspondiente al stack "js" (lo contenido dentro de los push), y muestra la alerta, la cual cuando se confirme emite otro evento que vuelve a mandar la misma información del post a la función que se ejecuta cuando se escucha en ShowPosts.php y que hace lo correspondiente, en este caso eliminar el post -->
+                                    <i class="fa fa-trash"></i>
+                                </a>
+"
+
+-ShowPosts.php:
+"
+protected $listeners = ['render', 'delete'];
+"
+
+"
+public function delete(Post $post){
+        $id = $post->id;
+        $post = Post::findOrFail($id);
+        $post->delete();
+    }
+"
+
+
+
+
+
+-
